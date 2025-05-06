@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">
+  <defs>
+    <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#007bff" />
+      <stop offset="100%" stop-color="#00e5ff" />
+    </linearGradient>
+  </defs>
+  <circle cx="100" cy="100" r="90" fill="none" stroke="url(#gradient)" stroke-width="4" />
+  <circle cx="100" cy="100" r="70" fill="none" stroke="url(#gradient)" stroke-width="2" stroke-dasharray="5,5" />
+  
+  <!-- Continents -->
+  <path d="M70,70 Q90,50 120,65 Q140,75 130,100 Q120,120 90,115 Q70,105 70,70" fill="#0a58ca" opacity="0.7" />
+  <path d="M120,120 Q140,110 150,130 Q145,150 125,145 Q115,135 120,120" fill="#0a58ca" opacity="0.7" />
+  <path d="M60,110 Q50,100 40,110 Q35,130 50,135 Q65,130 60,110" fill="#0a58ca" opacity="0.7" />
+  
+  <!-- Grid lines -->
+  <circle cx="100" cy="100" r="50" fill="none" stroke="#ffffff" stroke-width="0.5" opacity="0.3" />
+  <line x1="50" y1="100" x2="150" y2="100" stroke="#ffffff" stroke-width="0.5" opacity="0.3" />
+  <line x1="100" y1="50" x2="100" y2="150" stroke="#ffffff" stroke-width="0.5" opacity="0.3" />
+  
+  <!-- Text -->
+  <text x="100" y="175" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#ffffff" text-anchor="middle">ECOWORLD</text>
+</svg>

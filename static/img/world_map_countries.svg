@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="1000" height="500" viewBox="0 0 1000 500" preserveAspectRatio="xMidYMid meet">
+  <defs>
+    <style>
+      .country {
+        fill: rgba(255, 255, 255, 0.05);
+        stroke: rgba(255, 255, 255, 0.3);
+        stroke-width: 1;
+        transition: fill 0.3s;
+      }
+      .country:hover {
+        fill: rgba(255, 255, 255, 0.2);
+        cursor: pointer;
+      }
+      .selected {
+        fill: rgba(0, 123, 255, 0.3);
+        stroke: rgba(0, 123, 255, 0.7);
+        stroke-width: 2;
+      }
+      .ally {
+        fill: rgba(40, 167, 69, 0.3);
+        stroke: rgba(40, 167, 69, 0.7);
+        stroke-width: 2;
+      }
+      .enemy {
+        fill: rgba(220, 53, 69, 0.3);
+        stroke: rgba(220, 53, 69, 0.7);
+        stroke-width: 2;
+      }
+    </style>
+  </defs>
+  
+  <!-- North America -->
+  <path id="usa" class="country" d="M170,80 L240,80 L240,120 L290,120 L290,180 L170,180 Z" data-name="United States" data-continent="North America" />
+  <path id="canada" class="country" d="M150,40 L280,40 L280,80 L240,80 L170,80 L150,80 Z" data-name="Canada" data-continent="North America" />
+  <path id="mexico" class="country" d="M170,180 L220,180 L220,230 L170,230 Z" data-name="Mexico" data-continent="North America" />
+  <path id="greenland" class="country" d="M350,40 L400,40 L400,70 L350,70 Z" data-name="Greenland" data-continent="North America" />
+  
+  <!-- South America -->
+  <path id="brazil" class="country" d="M230,250 L270,250 L270,340 L230,340 Z" data-name="Brazil" data-continent="South America" />
+  <path id="argentina" class="country" d="M220,340 L250,340 L250,400 L220,400 Z" data-name="Argentina" data-continent="South America" />
+  <path id="peru" class="country" d="M200,280 L230,280 L230,320 L200,320 Z" data-name="Peru" data-continent="South America" />
+  <path id="colombia" class="country" d="M210,230 L240,230 L240,270 L210,270 Z" data-name="Colombia" data-continent="South America" />
+  
+  <!-- Europe -->
+  <path id="uk" class="country" d="M430,120 L450,120 L450,140 L430,140 Z" data-name="United Kingdom" data-continent="Europe" />
+  <path id="france" class="country" d="M450,150 L470,150 L470,170 L450,170 Z" data-name="France" data-continent="Europe" />
+  <path id="germany" class="country" d="M480,130 L500,130 L500,150 L480,150 Z" data-name="Germany" data-continent="Europe" />
+  <path id="italy" class="country" d="M490,160 L510,160 L510,180 L490,180 Z" data-name="Italy" data-continent="Europe" />
+  <path id="spain" class="country" d="M430,160 L450,160 L450,180 L430,180 Z" data-name="Spain" data-continent="Europe" />
+  <path id="russia" class="country" d="M510,80 L650,80 L650,180 L510,180 Z" data-name="Russia" data-continent="Europe/Asia" />
+  <path id="scandinavia" class="country" d="M480,80 L510,80 L510,120 L480,120 Z" data-name="Scandinavia" data-continent="Europe" />
+  
+  <!-- Africa -->
+  <path id="egypt" class="country" d="M500,200 L530,200 L530,230 L500,230 Z" data-name="Egypt" data-continent="Africa" />
+  <path id="nigeria" class="country" d="M470,250 L500,250 L500,270 L470,270 Z" data-name="Nigeria" data-continent="Africa" />
+  <path id="south_africa" class="country" d="M480,330 L510,330 L510,360 L480,360 Z" data-name="South Africa" data-continent="Africa" />
+  <path id="algeria" class="country" d="M440,200 L480,200 L480,230 L440,230 Z" data-name="Algeria" data-continent="Africa" />
+  <path id="ethiopia" class="country" d="M520,240 L540,240 L540,260 L520,260 Z" data-name="Ethiopia" data-continent="Africa" />
+  
+  <!-- Asia -->
+  <path id="china" class="country" d="M650,150 L730,150 L730,210 L650,210 Z" data-name="China" data-continent="Asia" />
+  <path id="india" class="country" d="M630,200 L660,200 L660,240 L630,240 Z" data-name="India" data-continent="Asia" />
+  <path id="japan" class="country" d="M760,160 L780,160 L780,180 L760,180 Z" data-name="Japan" data-continent="Asia" />
+  <path id="middle_east" class="country" d="M560,180 L600,180 L600,220 L560,220 Z" data-name="Middle East" data-continent="Asia" />
+  <path id="southeast_asia" class="country" d="M690,220 L730,220 L730,260 L690,260 Z" data-name="Southeast Asia" data-continent="Asia" />
+  
+  <!-- Oceania -->
+  <path id="australia" class="country" d="M800,300 L860,300 L860,350 L800,350 Z" data-name="Australia" data-continent="Oceania" />
+  <path id="new_zealand" class="country" d="M870,360 L890,360 L890,380 L870,380 Z" data-name="New Zealand" data-continent="Oceania" />
+  <path id="indonesia" class="country" d="M710,260 L750,260 L750,280 L710,280 Z" data-name="Indonesia" data-continent="Asia/Oceania" />
+</svg>

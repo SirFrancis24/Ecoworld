@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EcoWorld - Simulazione Economica e Geopolitica</title>
+    <link rel="stylesheet" href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        .hero-section {
+            padding: 100px 0;
+            text-align: center;
+            background-color: rgba(0, 0, 0, 0.7);
+            background-image: url('{{ url_for('static', filename='img/world_map.svg') }}');
+            background-blend-mode: overlay;
+            background-size: contain;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+        
+        .feature-card {
+            height: 100%;
+            transition: transform 0.3s ease;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-10px);
+        }
+        
+        .feature-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .action-button {
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            border-radius: 50px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .action-button:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <img src="{{ url_for('static', filename='img/logo.svg') }}" alt="EcoWorld Logo" height="40">
+                EcoWorld
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#features">Caratteristiche</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#about">Informazioni</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('auth.login') }}">Login</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('auth.register') }}">Registrati</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <section class="hero-section">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <h1 class="display-3 mb-4">EcoWorld</h1>
+                    <p class="lead mb-5">Un ecosistema economico e geopolitico dove puoi guidare la tua nazione verso la grandezza. Gestisci risorse, sviluppa tecnologie, costruisci un esercito e domina la scena mondiale.</p>
+                    <a href="{{ url_for('auth.login') }}" class="btn btn-primary btn-lg action-button mb-4">Gioca Ora</a>
+                    <p class="text-muted">Effettua il login per iniziare!</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="py-5" id="features">
+        <div class="container">
+            <h2 class="text-center mb-5">Caratteristiche Principali</h2>
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="card feature-card bg-dark">
+                        <div class="card-body text-center p-4">
+                            <div class="feature-icon text-primary">
+                                <i class="bi bi-cash-coin"></i>
+                            </div>
+                            <h4>Economia Complessa</h4>
+                            <p>Gestisci risorse, bilancia produzione e consumo, e costruisci un'economia prospera per la tua nazione.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card feature-card bg-dark">
+                        <div class="card-body text-center p-4">
+                            <div class="feature-icon text-success">
+                                <i class="bi bi-people"></i>
+                            </div>
+                            <h4>Diplomazia</h4>
+                            <p>Forma alleanze, negozia accordi commerciali, o dichiara guerra ai tuoi nemici per raggiungere i tuoi obiettivi.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card feature-card bg-dark">
+                        <div class="card-body text-center p-4">
+                            <div class="feature-icon text-danger">
+                                <i class="bi bi-shield"></i>
+                            </div>
+                            <h4>Potenza Militare</h4>
+                            <p>Costruisci un esercito potente, sviluppa strategie militari e proteggi i tuoi interessi nazionali.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card feature-card bg-dark">
+                        <div class="card-body text-center p-4">
+                            <div class="feature-icon text-info">
+                                <i class="bi bi-lightbulb"></i>
+                            </div>
+                            <h4>Ricerca Tecnologica</h4>
+                            <p>Investi nella ricerca per sbloccare nuove tecnologie che potenziano la tua economia e il tuo esercito.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card feature-card bg-dark">
+                        <div class="card-body text-center p-4">
+                            <div class="feature-icon text-warning">
+                                <i class="bi bi-shop"></i>
+                            </div>
+                            <h4>Mercato Globale</h4>
+                            <p>Compra e vendi risorse sul mercato mondiale, reagendo alla domanda e all'offerta per massimizzare i profitti.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card feature-card bg-dark">
+                        <div class="card-body text-center p-4">
+                            <div class="feature-icon text-secondary">
+                                <i class="bi bi-graph-up-arrow"></i>
+                            </div>
+                            <h4>Statistiche e Classifiche</h4>
+                            <p>Monitora i tuoi progressi e competi con altre nazioni per raggiungere la vetta delle classifiche mondiali.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="py-5 bg-dark" id="about">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6 mb-4 mb-lg-0">
+                    <h2>Informazioni su EcoWorld</h2>
+                    <p>EcoWorld è una simulazione complessa che combina elementi di strategia economica, militare e diplomatica. Ogni decisione che prendi influenzerà l'ecosistema mondiale e il destino della tua nazione.</p>
+                    <p>Sviluppato da appassionati di strategia e geopolitica, EcoWorld offre un'esperienza immersiva che sfida le tue capacità di leadership e gestione.</p>
+                    <a href="{{ url_for('auth.login') }}" class="btn btn-outline-primary mt-3">Inizia Ora</a>
+                </div>
+                <div class="col-lg-6">
+                    <div class="card bg-dark">
+                        <div class="card-body p-4">
+                            <h4 class="mb-3">Inizia il tuo percorso</h4>
+                            <p>Con un account, puoi:</p>
+                            <ul>
+                                <li>Accedere al tuo profilo personale</li>
+                                <li>Gestire la tua nazione</li>
+                                <li>Interagire con altre nazioni</li>
+                                <li>Sperimentare tutte le funzionalità</li>
+                            </ul>
+                            <p>Per un'esperienza completa, registrati per:</p>
+                            <ul>
+                                <li>Salvare i tuoi progressi</li>
+                                <li>Interagire con altri giocatori</li>
+                                <li>Accedere a tutte le funzionalità</li>
+                                <li>Competere nelle classifiche mondiali</li>
+                            </ul>
+                            <div class="d-grid gap-2 mt-4">
+                                <a href="{{ url_for('auth.login') }}" class="btn btn-primary">Accedi</a>
+                                <a href="{{ url_for('auth.register') }}" class="btn btn-secondary">Registrati</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="py-4 bg-black">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6 text-center text-md-start">
+                    <p class="mb-0">&copy; 2025 EcoWorld. Tutti i diritti riservati.</p>
+                </div>
+                <div class="col-md-6 text-center text-md-end">
+                    <a href="#" class="text-white me-3">Privacy</a>
+                    <a href="#" class="text-white me-3">Termini</a>
+                    <a href="#" class="text-white">Contatti</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

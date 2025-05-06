@@ -1,0 +1,226 @@
+{% extends "layout.html" %}
+
+{% block title %}Market - EcoWorld{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="market-header">
+        <h1>Global Market</h1>
+        <div class="market-timer-container">
+            <h4>Market Session End</h4>
+            <div class="market-timer" id="market-timer">00:00:00</div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="chart-container">
+                <h3 class="chart-title">Market Price History</h3>
+                <canvas id="market-price-chart"></canvas>
+            </div>
+            
+            <div class="market-filters">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label for="market-search" class="form-label">Search Seller</label>
+                        <input type="text" class="form-control" id="market-search" placeholder="Search...">
+                    </div>
+                    <div class="col-md-4">
+                        <label for="resource-filter" class="form-label">Resource Type</label>
+                        <select class="form-select" id="resource-filter">
+                            <option value="all">All Resources</option>
+                            <option value="raw_materials">Raw Materials</option>
+                            <option value="food">Food</option>
+                            <option value="energy">Energy</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="price-filter" class="form-label">Price Range</label>
+                        <select class="form-select" id="price-filter">
+                            <option value="all">All Prices</option>
+                            <option value="low">Low (< 20)</option>
+                            <option value="medium">Medium (20-50)</option>
+                            <option value="high">High (> 50)</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <h3 class="mt-4">Active Listings</h3>
+            
+            {% if active_listings %}
+                <div class="table-responsive">
+                    <table class="table table-dark table-hover">
+                        <thead>
+                            <tr>
+                                <th>Seller</th>
+                                <th>Resource</th>
+                                <th>Quantity</th>
+                                <th>Price per Unit</th>
+                                <th>Total Price</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for listing in active_listings %}
+                                <tr class="market-item" 
+                                    data-resource-type="{{ listing.resource_type }}" 
+                                    data-price-per-unit="{{ listing.price_per_unit }}">
+                                    <td class="seller-name">{{ listing.seller.name }}</td>
+                                    <td>
+                                        {% if listing.resource_type == 'raw_materials' %}
+                                            <i class="fas fa-gem" style="color: #9b59b6;"></i> Raw Materials
+                                        {% elif listing.resource_type == 'food' %}
+                                            <i class="fas fa-apple-alt" style="color: #2ecc71;"></i> Food
+                                        {% elif listing.resource_type == 'energy' %}
+                                            <i class="fas fa-bolt" style="color: #f39c12;"></i> Energy
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ "{:,.0f}".format(listing.quantity) }}</td>
+                                    <td>{{ "{:,.2f}".format(listing.price_per_unit) }}</td>
+                                    <td>{{ "{:,.2f}".format(listing.total_price) }}</td>
+                                    <td>
+                                        {% if listing.seller_id == nation.id %}
+                                            <form action="{{ url_for('market.cancel_listing', listing_id=listing.id) }}" method="post">
+                                                <button type="submit" class="btn btn-sm btn-danger">Cancel</button>
+                                            </form>
+                                        {% else %}
+                                            <form action="{{ url_for('market.buy_listing', listing_id=listing.id) }}" method="post">
+                                                <button type="submit" class="btn btn-sm btn-success" 
+                                                        {% if resources.currency < listing.total_price %}disabled{% endif %}>
+                                                    Buy
+                                                </button>
+                                            </form>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="alert alert-info">
+                    No active listings available. Be the first to sell resources!
+                </div>
+            {% endif %}
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="stat-card">
+                <h3>Your Resources</h3>
+                <p><i class="fas fa-gem" style="color: #9b59b6;"></i> Raw Materials: <span id="available-raw-materials">{{ "{:,.0f}".format(resources.raw_materials) }}</span></p>
+                <p><i class="fas fa-apple-alt" style="color: #2ecc71;"></i> Food: <span id="available-food">{{ "{:,.0f}".format(resources.food) }}</span></p>
+                <p><i class="fas fa-bolt" style="color: #f39c12;"></i> Energy: <span id="available-energy">{{ "{:,.0f}".format(resources.energy) }}</span></p>
+                <p><i class="fas fa-coins" style="color: #f1c40f;"></i> Currency: <span id="available-currency">{{ "{:,.0f}".format(resources.currency) }}</span></p>
+            </div>
+            
+            <div class="stat-card">
+                <h3>Create Listing</h3>
+                <form id="sell-form" action="{{ url_for('market.create_listing') }}" method="post">
+                    <div class="mb-3">
+                        <label for="resource-type" class="form-label">Resource Type</label>
+                        <select class="form-select" id="resource-type" name="resource_type" required>
+                            <option value="raw_materials">Raw Materials</option>
+                            <option value="food">Food</option>
+                            <option value="energy">Energy</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="quantity" class="form-label">
+                            Quantity (Max: <span id="max-quantity">0</span>)
+                            <button type="button" id="max-quantity-btn" class="btn btn-sm btn-outline-secondary">Max</button>
+                        </label>
+                        <input type="number" class="form-control" id="quantity" name="quantity" min="1" step="1" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="price-per-unit" class="form-label">Price per Unit</label>
+                        <input type="number" class="form-control" id="price-per-unit" name="price_per_unit" min="0.01" step="0.01" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Total Price: <span id="total-price">0.00</span></label>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">Create Listing</button>
+                </form>
+            </div>
+            
+            <div class="stat-card">
+                <h3>Your Trading History</h3>
+                <ul class="nav nav-tabs" id="tradeHistoryTab" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="selling-tab" data-bs-toggle="tab" data-bs-target="#selling" type="button" role="tab" aria-controls="selling" aria-selected="true">Selling</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="buying-tab" data-bs-toggle="tab" data-bs-target="#buying" type="button" role="tab" aria-controls="buying" aria-selected="false">Buying</button>
+                    </li>
+                </ul>
+                <div class="tab-content p-3" id="tradeHistoryTabContent">
+                    <div class="tab-pane fade show active" id="selling" role="tabpanel" aria-labelledby="selling-tab">
+                        {% if selling_history %}
+                            <div class="table-responsive">
+                                <table class="table table-sm table-dark">
+                                    <thead>
+                                        <tr>
+                                            <th>Date</th>
+                                            <th>Resource</th>
+                                            <th>Quantity</th>
+                                            <th>Total</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for trade in selling_history %}
+                                            <tr>
+                                                <td>{{ trade.trade_date.strftime('%m/%d %H:%M') }}</td>
+                                                <td>{{ trade.resource_type.replace('_', ' ') }}</td>
+                                                <td>{{ "{:,.0f}".format(trade.quantity) }}</td>
+                                                <td>{{ "{:,.2f}".format(trade.total_price) }}</td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <p class="text-muted">No selling history.</p>
+                        {% endif %}
+                    </div>
+                    <div class="tab-pane fade" id="buying" role="tabpanel" aria-labelledby="buying-tab">
+                        {% if buying_history %}
+                            <div class="table-responsive">
+                                <table class="table table-sm table-dark">
+                                    <thead>
+                                        <tr>
+                                            <th>Date</th>
+                                            <th>Resource</th>
+                                            <th>Quantity</th>
+                                            <th>Total</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for trade in buying_history %}
+                                            <tr>
+                                                <td>{{ trade.trade_date.strftime('%m/%d %H:%M') }}</td>
+                                                <td>{{ trade.resource_type.replace('_', ' ') }}</td>
+                                                <td>{{ "{:,.0f}".format(trade.quantity) }}</td>
+                                                <td>{{ "{:,.2f}".format(trade.total_price) }}</td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <p class="text-muted">No buying history.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/market.js') }}"></script>
+{% endblock %}

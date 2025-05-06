@@ -1,0 +1,266 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="1200" height="700" viewBox="0 0 1200 700" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <defs>
+    <filter id="blur-filter" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="2" />
+    </filter>
+    <filter id="shadow-filter" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="1" dy="1" stdDeviation="2" flood-opacity="0.3" />
+    </filter>
+    <linearGradient id="ocean-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#001e3c;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#003366;stop-opacity:1" />
+    </linearGradient>
+    <pattern id="gridPattern" width="20" height="20" patternUnits="userSpaceOnUse">
+      <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#004080" stroke-width="0.2" opacity="0.1"/>
+    </pattern>
+  </defs>
+  
+  <!-- Ocean background with gradient and subtle grid -->
+  <rect class="ocean" width="100%" height="100%" fill="url(#ocean-gradient)" />
+  <rect width="100%" height="100%" fill="url(#gridPattern)" />
+  
+  <style>
+    .continent { filter: url(#shadow-filter); }
+    .country { 
+      stroke: rgba(255, 255, 255, 0.3); 
+      stroke-width: 1; 
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+    .country:hover { 
+      filter: brightness(1.3);
+      stroke: rgba(255, 255, 255, 0.8);
+      stroke-width: 1.5;
+    }
+    .country-label {
+      fill: white;
+      font-family: 'Arial', sans-serif;
+      font-size: 10px;
+      text-anchor: middle;
+      pointer-events: none;
+      text-shadow: 0px 1px 2px rgba(0, 0, 0, 0.8);
+      opacity: 0.9;
+    }
+    .continent-label {
+      fill: rgba(255, 255, 255, 0.6);
+      font-family: 'Arial', sans-serif;
+      font-size: 16px;
+      font-weight: bold;
+      text-anchor: middle;
+      pointer-events: none;
+      text-shadow: 0px 1px 3px rgba(0, 0, 0, 0.9);
+    }
+    .marker-point {
+      fill: #ffffff;
+      stroke: #000000;
+      stroke-width: 1;
+      opacity: 0.8;
+    }
+  </style>
+  
+  <!-- North America -->
+  <g class="continent" id="north-america">
+    <path id="canada" class="country" d="M 140,80 L 120,110 L 160,150 L 210,170 L 270,160 L 290,140 L 250,120 L 220,80 Z" fill="#3a7a4c" />
+    <path id="usa" class="country" d="M 150,150 L 140,180 L 170,200 L 220,210 L 260,190 L 290,160 L 270,140 L 210,150 Z" fill="#4d8d5d" />
+    <path id="alaska" class="country" d="M 85,90 L 65,120 L 80,150 L 110,160 L 140,140 L 120,100 Z" fill="#2d6c3f" />
+    <path id="greenland" class="country" d="M 380,55 L 350,80 L 370,110 L 410,100 L 400,70 Z" fill="#e8e8e8" />
+    <path id="mexico" class="country" d="M 140,180 L 130,210 L 150,240 L 190,230 L 230,210 L 170,200 Z" fill="#6fa47a" />
+    
+    <text class="continent-label" x="220" y="60">NORTH AMERICA</text>
+    <text class="country-label" x="210" y="130">Canada</text>
+    <text class="country-label" x="210" y="180">USA</text>
+    <text class="country-label" x="100" y="130">Alaska</text>
+    <text class="country-label" x="380" y="90">Greenland</text>
+    <text class="country-label" x="170" y="220">Mexico</text>
+    
+    <circle class="marker-point" cx="210" cy="130" r="3" />
+    <circle class="marker-point" cx="210" cy="180" r="3" />
+    <circle class="marker-point" cx="100" cy="130" r="3" />
+    <circle class="marker-point" cx="380" cy="90" r="3" />
+    <circle class="marker-point" cx="170" cy="220" r="3" />
+  </g>
+  
+  <!-- South America -->
+  <g class="continent" id="south-america">
+    <path id="colombia" class="country" d="M 190,270 L 170,300 L 190,320 L 220,310 L 240,280 L 220,260 Z" fill="#6ca276" />
+    <path id="brazil" class="country" d="M 220,310 L 200,350 L 230,390 L 270,400 L 300,370 L 280,320 L 250,290 Z" fill="#578e68" />
+    <path id="argentina" class="country" d="M 200,350 L 190,390 L 210,430 L 240,440 L 260,410 L 230,390 Z" fill="#7fb38a" />
+    <path id="chile" class="country" d="M 190,390 L 180,440 L 190,480 L 210,460 L 210,430 Z" fill="#659b71" />
+    
+    <text class="continent-label" x="230" y="350">SOUTH AMERICA</text>
+    <text class="country-label" x="210" y="290">Colombia</text>
+    <text class="country-label" x="250" y="360">Brazil</text>
+    <text class="country-label" x="220" y="420">Argentina</text>
+    <text class="country-label" x="190" y="440">Chile</text>
+    
+    <circle class="marker-point" cx="210" cy="290" r="3" />
+    <circle class="marker-point" cx="250" cy="360" r="3" />
+    <circle class="marker-point" cx="220" cy="420" r="3" />
+    <circle class="marker-point" cx="190" cy="440" r="3" />
+  </g>
+  
+  <!-- Western Europe -->
+  <g class="continent" id="europe-west">
+    <path id="uk" class="country" d="M 480,130 L 460,150 L 470,170 L 490,160 L 500,140 Z" fill="#746a94" />
+    <path id="france" class="country" d="M 470,170 L 460,190 L 480,210 L 510,200 L 520,180 L 490,160 Z" fill="#8d82ac" />
+    <path id="germany" class="country" d="M 510,140 L 490,160 L 520,180 L 540,160 L 530,140 Z" fill="#655c85" />
+    <path id="spain" class="country" d="M 460,190 L 440,210 L 450,230 L 480,235 L 490,220 L 480,210 Z" fill="#9989b3" />
+    <path id="italy" class="country" d="M 510,200 L 500,220 L 520,240 L 540,230 L 530,210 Z" fill="#7c75a1" />
+    
+    <text class="continent-label" x="490" y="110">WESTERN EUROPE</text>
+    <text class="country-label" x="485" y="150">UK</text>
+    <text class="country-label" x="490" y="190">France</text>
+    <text class="country-label" x="520" y="160">Germany</text>
+    <text class="country-label" x="460" y="220">Spain</text>
+    <text class="country-label" x="520" y="225">Italy</text>
+    
+    <circle class="marker-point" cx="485" cy="150" r="3" />
+    <circle class="marker-point" cx="490" cy="190" r="3" />
+    <circle class="marker-point" cx="520" cy="160" r="3" />
+    <circle class="marker-point" cx="460" cy="220" r="3" />
+    <circle class="marker-point" cx="520" cy="225" r="3" />
+  </g>
+  
+  <!-- Eastern Europe -->
+  <g class="continent" id="europe-east">
+    <path id="poland" class="country" d="M 540,160 L 530,180 L 550,190 L 570,180 L 580,160 L 560,150 Z" fill="#817cad" />
+    <path id="ukraine" class="country" d="M 570,180 L 560,200 L 580,220 L 610,210 L 620,190 L 600,170 L 580,160 Z" fill="#736d9e" />
+    <path id="russia" class="country" d="M 580,160 L 600,170 L 630,140 L 680,130 L 730,110 L 700,90 L 660,100 L 620,120 L 590,130 L 560,150 Z" fill="#645b8f" />
+    
+    <text class="continent-label" x="620" y="130">EASTERN EUROPE</text>
+    <text class="country-label" x="550" y="170">Poland</text>
+    <text class="country-label" x="590" y="200">Ukraine</text>
+    <text class="country-label" x="660" y="120">Russia</text>
+    
+    <circle class="marker-point" cx="550" cy="170" r="3" />
+    <circle class="marker-point" cx="590" cy="200" r="3" />
+    <circle class="marker-point" cx="660" cy="120" r="3" />
+  </g>
+  
+  <!-- Africa -->
+  <g class="continent" id="africa">
+    <path id="egypt" class="country" d="M 540,240 L 520,260 L 540,280 L 570,270 L 580,250 Z" fill="#b3774a" />
+    <path id="nigeria" class="country" d="M 480,300 L 460,320 L 480,340 L 510,330 L 520,310 Z" fill="#c58253" />
+    <path id="south-africa" class="country" d="M 520,380 L 500,400 L 520,420 L 550,410 L 560,390 L 540,370 Z" fill="#a16a3e" />
+    
+    <text class="continent-label" x="520" y="340">AFRICA</text>
+    <text class="country-label" x="550" y="260">Egypt</text>
+    <text class="country-label" x="495" y="320">Nigeria</text>
+    <text class="country-label" x="530" y="400">South Africa</text>
+    
+    <circle class="marker-point" cx="550" cy="260" r="3" />
+    <circle class="marker-point" cx="495" cy="320" r="3" />
+    <circle class="marker-point" cx="530" cy="400" r="3" />
+  </g>
+  
+  <!-- Middle East -->
+  <g class="continent" id="middle-east">
+    <path id="saudi-arabia" class="country" d="M 580,250 L 560,270 L 590,290 L 620,280 L 630,260 L 610,240 Z" fill="#b8805a" />
+    <path id="iran" class="country" d="M 610,240 L 600,260 L 620,280 L 640,270 L 650,250 L 630,230 Z" fill="#a57353" />
+    
+    <text class="continent-label" x="610" y="270">MIDDLE EAST</text>
+    <text class="country-label" x="600" y="275">Saudi Arabia</text>
+    <text class="country-label" x="625" y="250">Iran</text>
+    
+    <circle class="marker-point" cx="600" cy="275" r="3" />
+    <circle class="marker-point" cx="625" cy="250" r="3" />
+  </g>
+  
+  <!-- Asia -->
+  <g class="continent" id="asia">
+    <path id="china" class="country" d="M 730,150 L 700,190 L 720,230 L 760,240 L 790,220 L 810,190 L 790,150 L 750,130 Z" fill="#76acbc" />
+    <path id="india" class="country" d="M 670,230 L 650,260 L 670,290 L 710,300 L 740,280 L 720,230 L 700,210 Z" fill="#89c0d0" />
+    <path id="japan" class="country" d="M 840,180 L 820,200 L 830,220 L 850,210 L 860,190 Z" fill="#659aab" />
+    <path id="south-korea" class="country" d="M 810,220 L 800,240 L 820,250 L 830,230 Z" fill="#7eb3c3" />
+    
+    <text class="continent-label" x="750" y="180">ASIA</text>
+    <text class="country-label" x="750" y="190">China</text>
+    <text class="country-label" x="700" y="260">India</text>
+    <text class="country-label" x="840" y="200">Japan</text>
+    <text class="country-label" x="815" y="235">South Korea</text>
+    
+    <circle class="marker-point" cx="750" cy="190" r="3" />
+    <circle class="marker-point" cx="700" cy="260" r="3" />
+    <circle class="marker-point" cx="840" cy="200" r="3" />
+    <circle class="marker-point" cx="815" cy="235" r="3" />
+  </g>
+  
+  <!-- Oceania -->
+  <g class="continent" id="oceania">
+    <path id="australia" class="country" d="M 850,350 L 830,380 L 850,410 L 890,420 L 920,400 L 930,370 L 900,340 L 870,330 Z" fill="#d09f60" />
+    <path id="new-zealand" class="country" d="M 950,390 L 940,410 L 960,420 L 970,400 Z" fill="#e3b372" />
+    
+    <text class="continent-label" x="890" y="360">OCEANIA</text>
+    <text class="country-label" x="880" y="380">Australia</text>
+    <text class="country-label" x="955" y="405">New Zealand</text>
+    
+    <circle class="marker-point" cx="880" cy="380" r="3" />
+    <circle class="marker-point" cx="955" cy="405" r="3" />
+  </g>
+  
+  <!-- Extra Regions -->
+  <g class="continent" id="extra">
+    <path id="antarctica" class="country" d="M 300,620 L 250,610 L 200,610 L 150,620 L 350,620 L 400,610 L 450,610 L 500,620 L 550,620 L 600,610 L 650,610 L 700,620 L 750,620 L 800,610 L 850,610 L 900,620 L 400,625 Z" fill="#e0e0e0" />
+    
+    <text class="continent-label" x="600" y="600">ANTARCTICA</text>
+    
+    <circle class="marker-point" cx="600" cy="600" r="3" />
+  </g>
+  
+  <!-- Overlay effects -->
+  <path class="equator" d="M 0,350 L 1200,350" stroke="#ffffff" stroke-width="0.5" stroke-dasharray="5,5" opacity="0.3" />
+  
+  <!-- Map details and texturing -->
+  <g class="map-texture" opacity="0.2">
+    <rect width="1200" height="700" fill="url(#gridPattern)" />
+    <path d="M 0,0 L 1200,700" stroke="#ffffff" stroke-width="0.1" opacity="0.1" />
+    <path d="M 1200,0 L 0,700" stroke="#ffffff" stroke-width="0.1" opacity="0.1" />
+  </g>
+  
+  <!-- Map coordinate grid lines with subtle appearance -->
+  <g class="map-grid" opacity="0.1">
+    <path d="M 300,0 L 300,700" stroke="#ffffff" stroke-width="0.2" />
+    <path d="M 600,0 L 600,700" stroke="#ffffff" stroke-width="0.2" />
+    <path d="M 900,0 L 900,700" stroke="#ffffff" stroke-width="0.2" />
+    <path d="M 0,175 L 1200,175" stroke="#ffffff" stroke-width="0.2" />
+    <path d="M 0,525 L 1200,525" stroke="#ffffff" stroke-width="0.2" />
+  </g>
+  
+  <!-- Borders overlay for more detailed appearance -->
+  <g class="map-borders" opacity="0.4">
+    <path d="M 120,110 L 160,150" stroke="#ffffff" stroke-width="0.5" />
+    <path d="M 270,160 L 290,140" stroke="#ffffff" stroke-width="0.5" />
+    <path d="M 210,170 L 270,160" stroke="#ffffff" stroke-width="0.5" />
+    <path d="M 140,180 L 170,200" stroke="#ffffff" stroke-width="0.5" />
+    <path d="M 170,200 L 220,210" stroke="#ffffff" stroke-width="0.5" />
+    <path d="M 220,210 L 260,190" stroke="#ffffff" stroke-width="0.5" />
+    <path d="M 260,190 L 290,160" stroke="#ffffff" stroke-width="0.5" />
+    <path d="M 290,160 L 270,140" stroke="#ffffff" stroke-width="0.5" />
+    <path d="M 270,140 L 210,150" stroke="#ffffff" stroke-width="0.5" />
+    <path d="M 210,150 L 150,150" stroke="#ffffff" stroke-width="0.5" />
+  </g>
+  
+  <!-- Map compass for navigation detail -->
+  <g class="map-compass" transform="translate(100, 600)" opacity="0.7">
+    <circle cx="0" cy="0" r="25" fill="none" stroke="#ffffff" stroke-width="1" />
+    <path d="M 0,-20 L 0,20 M -20,0 L 20,0" stroke="#ffffff" stroke-width="1" />
+    <text x="0" y="-27" fill="#ffffff" text-anchor="middle" font-size="10">N</text>
+    <text x="0" y="36" fill="#ffffff" text-anchor="middle" font-size="10">S</text>
+    <text x="-27" y="4" fill="#ffffff" text-anchor="middle" font-size="10">W</text>
+    <text x="27" y="4" fill="#ffffff" text-anchor="middle" font-size="10">E</text>
+  </g>
+
+  <!-- Ocean currents for added realism -->
+  <g class="ocean-currents" opacity="0.2">
+    <path d="M 400,150 Q 450,100 500,150" stroke="#00ccff" stroke-width="2" fill="none" />
+    <path d="M 700,350 Q 750,400 800,350" stroke="#00ccff" stroke-width="2" fill="none" />
+    <path d="M 200,450 Q 250,500 300,450" stroke="#00ccff" stroke-width="2" fill="none" />
+  </g>
+  
+  <!-- Map title and legend -->
+  <g class="map-title">
+    <text x="600" y="30" fill="#ffffff" text-anchor="middle" font-size="20" font-weight="bold">EcoWorld Geopolitical Map</text>
+    <text x="600" y="50" fill="#ffffff" text-anchor="middle" font-size="12" opacity="0.7">Interactive Nations and Territories</text>
+  </g>
+</svg>

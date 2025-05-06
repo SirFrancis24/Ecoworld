@@ -1,0 +1,41 @@
+/* Custom CSS styles for EcoWorld */
+
+/* Colore per la barra di progresso delle materie prime */
+.bg-purple {
+    background-color: #9b59b6 !important;
+}
+
+/* Styles for resource production/consumption displays */
+.resource-item {
+    transition: all 0.3s ease;
+}
+
+.resource-item:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* Optimization explanation styling */
+#optimization-explanation {
+    transition: all 0.3s ease;
+}
+
+#optimization-details {
+    font-size: 0.9rem;
+}
+
+/* Alerts in automatic suggestions */
+.suggestion-alert {
+    border-left: 4px solid var(--bs-warning);
+    background-color: rgba(255, 193, 7, 0.1);
+}
+
+.suggestion-info {
+    border-left: 4px solid var(--bs-info);
+    background-color: rgba(13, 202, 240, 0.1);
+}
+
+.suggestion-success {
+    border-left: 4px solid var(--bs-success);
+    background-color: rgba(25, 135, 84, 0.1);
+}

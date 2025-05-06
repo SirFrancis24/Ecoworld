@@ -1,0 +1,246 @@
+{% extends 'layout.html' %}
+
+{% block title %}Technology: {{ tech.name }} - {{ nation.name }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('game.dashboard') }}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('technology.technology_view') }}">Technology</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">{{ tech.name }}</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="d-flex justify-content-between align-items-center">
+                        <span>{{ tech.name }}</span>
+                        <span class="badge {% if tech.level > 0 %}bg-success{% else %}bg-secondary{% endif %}">
+                            {% if tech.level > 0 %}
+                                Level {{ tech.level }} / {{ tech.max_level }}
+                            {% else %}
+                                Undiscovered
+                            {% endif %}
+                        </span>
+                    </h2>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <h4>Description</h4>
+                            <p>{{ tech.description }}</p>
+                            
+                            {% if tech_data.flavor_text %}
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle"></i> <em>{{ tech_data.flavor_text }}</em>
+                            </div>
+                            {% endif %}
+                            
+                            <h4>Category</h4>
+                            <p><span class="badge bg-info">{{ tech.category }}</span></p>
+                            
+                            {% if tech.level > 0 %}
+                            <h4>Technology Benefits</h4>
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Benefit</th>
+                                            <th>Value</th>
+                                            <th>Description</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for effect_key, effect_value in effects.items() %}
+                                        <tr>
+                                            <td><strong>{{ effect_key | replace('_', ' ') | title }}</strong></td>
+                                            <td>
+                                                <span class="badge {% if effect_value > 1 %}bg-success{% elif effect_value < 1 %}bg-danger{% else %}bg-info{% endif %}">
+                                                    {% if effect_value > 1 %}
+                                                        +{{ ((effect_value - 1) * 100) | round(1) }}%
+                                                    {% elif effect_value < 1 %}
+                                                        {{ ((effect_value - 1) * 100) | round(1) }}%
+                                                    {% else %}
+                                                        {{ effect_value }}
+                                                    {% endif %}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                {% if 'production' in effect_key %}
+                                                    Improves the rate at which your nation produces this resource.
+                                                {% elif 'consumption' in effect_key %}
+                                                    Reduces the amount of resources consumed by your nation.
+                                                {% elif 'military' in effect_key %}
+                                                    Enhances your military strength or capabilities.
+                                                {% elif 'research' in effect_key %}
+                                                    Speeds up research and technology development.
+                                                {% elif 'espionage' in effect_key %}
+                                                    Improves your nation's espionage capabilities.
+                                                {% elif 'diplomatic' in effect_key %}
+                                                    Enhances your nation's diplomatic influence.
+                                                {% else %}
+                                                    Provides various improvements to your nation.
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <div class="card mb-3">
+                                <div class="card-header bg-primary text-white">
+                                    Research Status
+                                </div>
+                                <div class="card-body">
+                                    {% if tech.researching %}
+                                        <div class="mb-3">
+                                            <h5>Research in Progress</h5>
+                                            <div class="progress">
+                                                <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                                                     role="progressbar" 
+                                                     style="width: {{ (tech.research_points_current / tech.research_points_required) * 100 }}%"
+                                                     aria-valuenow="{{ (tech.research_points_current / tech.research_points_required) * 100 }}"
+                                                     aria-valuemin="0" 
+                                                     aria-valuemax="100">
+                                                    {{ ((tech.research_points_current / tech.research_points_required) * 100) | round(1) }}%
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <p><strong>Started:</strong> {{ tech.research_started.strftime('%Y-%m-%d %H:%M') }}</p>
+                                        <p><strong>Expected Completion:</strong> {{ tech.estimated_completion.strftime('%Y-%m-%d %H:%M') }}</p>
+                                        
+                                        <form action="{{ url_for('technology.cancel_research_route') }}" method="post">
+                                            <input type="hidden" name="technology_id" value="{{ tech.id }}">
+                                            <button type="submit" class="btn btn-danger btn-sm">Cancel Research</button>
+                                        </form>
+                                    {% elif tech.level >= tech.max_level %}
+                                        <div class="alert alert-success">
+                                            This technology has been researched to its maximum level.
+                                        </div>
+                                    {% elif tech.level == 0 %}
+                                        <div class="alert alert-warning">
+                                            This technology has not been discovered yet.
+                                        </div>
+                                        
+                                        {% if tech in available_techs %}
+                                            <form action="{{ url_for('technology.research_technology') }}" method="post">
+                                                <input type="hidden" name="technology_id" value="{{ tech.id }}">
+                                                <button type="submit" class="btn btn-primary">Start Research</button>
+                                            </form>
+                                        {% else %}
+                                            <div class="alert alert-info">
+                                                <strong>Requirements not met:</strong> You need to research the prerequisite technologies first.
+                                            </div>
+                                        {% endif %}
+                                    {% else %}
+                                        <div class="alert alert-info">
+                                            This technology is at level {{ tech.level }} of {{ tech.max_level }}.
+                                        </div>
+                                        
+                                        <form action="{{ url_for('technology.research_technology') }}" method="post">
+                                            <input type="hidden" name="technology_id" value="{{ tech.id }}">
+                                            <button type="submit" class="btn btn-primary">Research Next Level</button>
+                                        </form>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="card">
+                                <div class="card-header bg-info text-white">
+                                    Research Cost
+                                </div>
+                                <div class="card-body">
+                                    <p><strong>Raw Materials:</strong> {{ 100 * (1 + 0.5 * tech.level) * 2 | round }}</p>
+                                    <p><strong>Energy:</strong> {{ 100 * (1 + 0.5 * tech.level) | round }}</p>
+                                    <p><strong>Currency:</strong> {{ 100 * (1 + 0.5 * tech.level) * 10 | round }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h4>Prerequisites</h4>
+                </div>
+                <div class="card-body">
+                    {% if prerequisites %}
+                        <ul class="list-group">
+                            {% for prereq in prerequisites %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <a href="{{ url_for('technology.technology_details_page', tech_id=prereq.id) }}">{{ prereq.name }}</a>
+                                    <span class="badge {% if prereq.researched %}bg-success{% else %}bg-danger{% endif %} rounded-pill">
+                                        {% if prereq.researched %}
+                                            Level {{ prereq.level }}
+                                        {% else %}
+                                            Not Researched
+                                        {% endif %}
+                                    </span>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p>This technology has no prerequisites.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h4>Technologies that require this</h4>
+                </div>
+                <div class="card-body">
+                    {% if dependents %}
+                        <ul class="list-group">
+                            {% for dep in dependents %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <a href="{{ url_for('technology.technology_details_page', tech_id=dep.id) }}">{{ dep.name }}</a>
+                                    <span class="badge {% if dep.researched %}bg-success{% else %}bg-secondary{% endif %} rounded-pill">
+                                        {% if dep.researched %}
+                                            Level {{ dep.level }}
+                                        {% else %}
+                                            Not Researched
+                                        {% endif %}
+                                    </span>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p>No technologies require this as a prerequisite.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    $(document).ready(function() {
+        // You could add interactive features here, such as:
+        // - Technology tree visualization
+        // - Real-time research progress updates
+        // - Cost calculation for future levels
+    });
+</script>
+{% endblock %}

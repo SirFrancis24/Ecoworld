@@ -1,0 +1,615 @@
+{% extends "layout.html" %}
+
+{% block title %}Dashboard - EcoWorld{% endblock %}
+
+{% block head %}
+    {{ super() }}
+    <!-- Auto refresh the page every 60 seconds -->
+    <meta http-equiv="refresh" content="60">
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="dashboard-header">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1>{{ nation.name }}</h1>
+                <p class="text-muted">{{ nation.description }}</p>
+            </div>
+            <div class="col-md-4 text-md-end">
+                <p><strong>Founded:</strong> {{ nation.founded_date.strftime('%B %d, %Y') }}</p>
+                <p><strong>Population:</strong> {{ "{:,}".format(nation.total_population) }}</p>
+                <p><strong>Overall Rank:</strong> #{{ nation.overall_rank }}</p>
+            </div>
+        </div>
+    </div>
+    
+    
+    <div class="resource-display">
+        <div class="resource-item">
+            <i class="fas fa-gem resource-icon" style="color: #9b59b6;"></i>
+            <div class="resource-name">Raw Materials</div>
+            <div class="resource-amount" id="available-raw-materials">{{ "{:,.0f}".format(resources.raw_materials) }}</div>
+            <div class="resource-production">+{{ "{:,.0f}".format(resources.raw_materials_production) }}/hr</div>
+            <div class="resource-consumption">-{{ "{:,.0f}".format(resources.raw_materials_consumption) }}/hr</div>
+        </div>
+        <div class="resource-item">
+            <i class="fas fa-apple-alt resource-icon" style="color: #2ecc71;"></i>
+            <div class="resource-name">Food</div>
+            <div class="resource-amount" id="available-food">{{ "{:,.0f}".format(resources.food) }}</div>
+            <div class="resource-production">+{{ "{:,.0f}".format(resources.food_production) }}/hr</div>
+            <div class="resource-consumption">-{{ "{:,.0f}".format(resources.food_consumption) }}/hr</div>
+        </div>
+        <div class="resource-item">
+            <i class="fas fa-bolt resource-icon" style="color: #f39c12;"></i>
+            <div class="resource-name">Energy</div>
+            <div class="resource-amount" id="available-energy">{{ "{:,.0f}".format(resources.energy) }}</div>
+            <div class="resource-production">+{{ "{:,.0f}".format(resources.energy_production) }}/hr</div>
+            <div class="resource-consumption">-{{ "{:,.0f}".format(resources.energy_consumption) }}/hr</div>
+        </div>
+        <div class="resource-item">
+            <i class="fas fa-flask resource-icon" style="color: #3498db;"></i>
+            <div class="resource-name">Technology</div>
+            <div class="resource-amount">{{ "{:,.0f}".format(resources.technology_points) }}</div>
+            <div class="resource-production">+{{ "{:,.0f}".format(resources.technology_production) }}/hr</div>
+        </div>
+        <div class="resource-item">
+            <i class="fas fa-coins resource-icon" style="color: #f1c40f;"></i>
+            <div class="resource-name">Currency</div>
+            <div class="resource-amount" id="available-currency">{{ "{:,.0f}".format(resources.currency) }}</div>
+            <div class="resource-production">+{{ "{:,.0f}".format(resources.currency_production) }}/hr</div>
+        </div>
+    </div>
+    
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="market-timer-container text-center">
+                <h4>Next Market Update</h4>
+                <div class="market-timer" id="market-timer">00:00:00</div>
+            </div>
+            
+
+        </div>
+        <div class="col-md-9">
+            <!-- Global News -->
+            <div class="dashboard-news-container h-100">
+                {% include 'dashboard_news_widget.html' %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="dashboard-tabs">
+        <div class="dashboard-tab active" data-target="overview-content">Overview</div>
+        <div class="dashboard-tab" data-target="resources-content">Resources</div>
+        <div class="dashboard-tab" data-target="military-content">Military</div>
+        <div class="dashboard-tab" data-target="technology-content">Technology</div>
+        <div class="dashboard-tab" data-target="rankings-content">Rankings</div>
+    </div>
+    
+    <div id="overview-content" class="dashboard-content" style="display: block;">
+        
+        <div class="row mb-4">
+            <!-- First Row: Charts -->
+            <div class="col-md-8">
+                <div class="row">
+                    <!-- Population Distribution Chart -->
+                    <div class="col-md-6">
+                        <div class="overview-chart-box">
+                            <canvas id="population-distribution-chart" height="240"></canvas>
+                        </div>
+                    </div>
+                    
+                    <!-- Nation Power Triangle -->
+                    <div class="col-md-6">
+                        <div class="overview-chart-box">
+                            <canvas id="nation-comparison-chart" height="240"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Economic Indicators -->
+            <div class="col-md-4">
+                <div class="overview-stats-box">
+                    <h3 class="overview-box-title">Economic Indicators</h3>
+                    <p><strong>GDP:</strong> {{ "{:,.0f}".format(nation.gdp) }}</p>
+                    <p><strong>Inflation Rate:</strong> {{ "{:.1f}%".format(nation.inflation_rate) }}</p>
+                    <p><strong>Tax Rate:</strong> {{ "{:.1f}%".format(nation.tax_rate) }}</p>
+                    <p><strong>Economic Rank:</strong> #{{ nation.economic_rank }}</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            <!-- Second Row: Actions, Research, Military -->
+            <div class="col-md-4">
+                <div class="overview-box">
+                    <h3 class="overview-box-title">Quick Actions</h3>
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <a href="{{ url_for('market.market_view') }}" class="btn btn-outline-primary d-block mb-2">Market</a>
+                            <a href="{{ url_for('technology.technology_view') }}" class="btn btn-outline-primary d-block">Technology</a>
+                        </div>
+                        <div class="col-6">
+                            <a href="{{ url_for('military.military_view') }}" class="btn btn-outline-primary d-block mb-2">Military</a>
+                            <a href="{{ url_for('game.population') }}" class="btn btn-outline-primary d-block">Population</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="overview-box">
+                    <h3 class="overview-box-title">Active Researches</h3>
+                    <div class="scrollable-research-container">
+                        {% set active_research = false %}
+                        {% for tech in technologies %}
+                            {% if tech.researching %}
+                                {% set active_research = true %}
+                                <div class="tech-item">
+                                    <p class="mb-1">{{ tech.name }} (Level {{ tech.level + 1 }})</p>
+                                    <div class="progress">
+                                        {% set progress_pct = (tech.research_points_current / tech.research_points_required) * 100 %}
+                                        {% set bg_color = "bg-info" %}
+                                        {% if tech.category == "Military" %}
+                                            {% set bg_color = "bg-danger" %}
+                                        {% elif tech.category == "Production" %}
+                                            {% set bg_color = "bg-success" %}
+                                        {% elif tech.category == "Research" %}
+                                            {% set bg_color = "bg-primary" %}
+                                        {% endif %}
+                                        <div class="progress-bar progress-bar-striped {{ bg_color }}" 
+                                            role="progressbar" 
+                                            style="width: {{ progress_pct }}%"
+                                            aria-valuenow="{{ progress_pct }}" 
+                                            aria-valuemin="0" 
+                                            aria-valuemax="100">
+                                            {{ "{:.1f}%".format(progress_pct) }}
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                        
+                        {% for tech in technologies %}
+                            {% if tech.level > 0 and tech.level == tech.max_level %}
+                                <div class="tech-item">
+                                    <p class="mb-1">{{ tech.name }} (Level {{ tech.level }})</p>
+                                    <div class="completed-bar">
+                                        <div class="completion-indicator"></div>
+                                        <span class="completion-text research-complete">Level Maxed</span>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                        
+                        {% if not active_research and technologies|selectattr('researching', 'eq', true)|list|length == 0 %}
+                            <p class="text-muted">No active research projects.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="overview-box">
+                    <h3 class="overview-box-title">Military Status</h3>
+                    <p><strong>Military Rank:</strong> #{{ nation.military_rank }}</p>
+                    <p><strong>Offensive Power:</strong> {{ "{:,.0f}".format(military.offensive_power) }}</p>
+                    <p><strong>Defensive Power:</strong> {{ "{:,.0f}".format(military.defensive_power) }}</p>
+                    <p><strong>Espionage Power:</strong> {{ "{:,.0f}".format(military.espionage_power) }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="resources-content" class="dashboard-content">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="chart-container">
+                    <h3 class="chart-title">Raw Materials</h3>
+                    <canvas id="raw-materials-chart"></canvas>
+                </div>
+                
+                <div class="chart-container">
+                    <h3 class="chart-title">Food</h3>
+                    <canvas id="food-chart"></canvas>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="chart-container">
+                    <h3 class="chart-title">Energy</h3>
+                    <canvas id="energy-chart"></canvas>
+                </div>
+                
+                <div class="chart-container">
+                    <h3 class="chart-title">Currency</h3>
+                    <canvas id="currency-chart"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <div class="chart-container">
+            <h3 class="chart-title">Market Prices</h3>
+            <canvas id="market-price-chart"></canvas>
+        </div>
+    </div>
+    
+    <div id="military-content" class="dashboard-content">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="stat-card">
+                    <h3>Military Power</h3>
+                    <div class="row text-center">
+                        <div class="col-4">
+                            <div class="military-stat-value" id="offensive-power">{{ "{:,.0f}".format(military.offensive_power) }}</div>
+                            <div class="military-stat-label">Offensive</div>
+                        </div>
+                        <div class="col-4">
+                            <div class="military-stat-value" id="defensive-power">{{ "{:,.0f}".format(military.defensive_power) }}</div>
+                            <div class="military-stat-label">Defensive</div>
+                        </div>
+                        <div class="col-4">
+                            <div class="military-stat-value" id="espionage-power">{{ "{:,.0f}".format(military.espionage_power) }}</div>
+                            <div class="military-stat-label">Espionage</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <h3>Military Units</h3>
+                    <div class="row">
+                        <div class="col-6">
+                            <p><i class="fas fa-user-soldier"></i> Infantry: <span id="available-infantry">{{ military.infantry }}</span></p>
+                            <p><i class="fas fa-tank"></i> Tanks: <span id="available-tanks">{{ military.tanks }}</span></p>
+                            <p><i class="fas fa-fighter-jet"></i> Aircraft: <span id="available-aircraft">{{ military.aircraft }}</span></p>
+                        </div>
+                        <div class="col-6">
+                            <p><i class="fas fa-ship"></i> Navy: <span id="available-navy">{{ military.navy }}</span></p>
+                            <p><i class="fas fa-rocket"></i> Missiles: <span id="available-missiles">{{ military.missiles }}</span></p>
+                            <p><i class="fas fa-user-secret"></i> Spies: <span id="available-spies">{{ military.spies }}</span></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="chart-container">
+                    <h3 class="chart-title">Military Distribution</h3>
+                    <canvas id="military-distribution-chart"></canvas>
+                </div>
+                
+                <div class="stat-card">
+                    <h3>Defensive Structures</h3>
+                    <div class="row">
+                        <div class="col-4 text-center">
+                            <i class="fas fa-shield-alt fa-2x mb-2"></i>
+                            <p>Bunkers</p>
+                            <p class="military-stat-value">{{ military.bunkers }}</p>
+                        </div>
+                        <div class="col-4 text-center">
+                            <i class="fas fa-crosshairs fa-2x mb-2"></i>
+                            <p>Anti-Air</p>
+                            <p class="military-stat-value">{{ military.anti_air }}</p>
+                        </div>
+                        <div class="col-4 text-center">
+                            <i class="fas fa-water fa-2x mb-2"></i>
+                            <p>Coastal</p>
+                            <p class="military-stat-value">{{ military.coastal_defenses }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="technology-content" class="dashboard-content">
+        <div class="chart-container">
+            <h3 class="chart-title">Technology Progress</h3>
+            <div id="technology-tree-summary">
+                {% set tech_categories = {} %}
+                {% for tech in technologies %}
+                    {% if tech.category not in tech_categories %}
+                        {% set _ = tech_categories.update({tech.category: []}) %}
+                    {% endif %}
+                    {% set _ = tech_categories[tech.category].append(tech) %}
+                {% endfor %}
+                
+                <div class="row">
+                    {% for category, techs in tech_categories.items() %}
+                        <div class="col-md-4 mb-4">
+                            <h4>{{ category }}</h4>
+                            <div class="progress mb-2">
+                                {% set total_levels = 0 %}
+                                {% set max_levels = 0 %}
+                                {% for tech in techs %}
+                                    {% set total_levels = total_levels + tech.level %}
+                                    {% set max_levels = max_levels + tech.max_level %}
+                                {% endfor %}
+                                
+                                {% set progress = 0 if max_levels == 0 else (total_levels / max_levels) * 100 %}
+                                <div class="progress-bar" role="progressbar" style="width: {{ progress }}%;" 
+                                     aria-valuenow="{{ progress }}" aria-valuemin="0" aria-valuemax="100">
+                                    {{ "{:.1f}".format(progress) }}%
+                                </div>
+                            </div>
+                            <small>{{ total_levels }}/{{ max_levels }} levels researched</small>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-6">
+                <div class="stat-card">
+                    <h3>Research in Progress</h3>
+                    {% set active_research = false %}
+                    {% for tech in technologies %}
+                        {% if tech.researching %}
+                            {% set active_research = true %}
+                            <div class="mb-3">
+                                <p class="mb-1">{{ tech.name }} (Level {{ tech.level + 1 }})</p>
+                                <div class="progress">
+                                    <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                                         role="progressbar" 
+                                         style="width: {{ (tech.research_points_current / tech.research_points_required) * 100 }}%"
+                                         aria-valuenow="{{ (tech.research_points_current / tech.research_points_required) * 100 }}" 
+                                         aria-valuemin="0" 
+                                         aria-valuemax="100">
+                                        {{ "{:.1f}".format((tech.research_points_current / tech.research_points_required) * 100) }}%
+                                    </div>
+                                </div>
+                                <small class="static-timer">
+                                    {% if tech.researching %}
+                                        {% if tech.estimated_completion %}
+                                            {% set remaining_seconds = (tech.estimated_completion - now).total_seconds() | int %}
+                                            {% if remaining_seconds <= 0 %}
+                                                <span class="text-success">Completed</span>
+                                            {% else %}
+                                                {% set hours = (remaining_seconds // 3600) | int %}
+                                                {% set minutes = ((remaining_seconds % 3600) // 60) | int %}
+                                                {% set seconds = (remaining_seconds % 60) | int %}
+                                                {{ "%02d:%02d:%02d" | format(hours, minutes, seconds) }}
+                                                <!-- Debug info -->
+                                                <span class="d-none">
+                                                    ({{ tech.estimated_completion }} - {{ now }} = {{ remaining_seconds }}s)
+                                                </span>
+                                            {% endif %}
+                                        {% else %}
+                                            Calculating...
+                                        {% endif %}
+                                    {% else %}
+                                        {% if (tech.research_points_current / tech.research_points_required) * 100 >= 99.9 %}
+                                            <span class="text-success">Completed</span>
+                                        {% else %}
+                                            <span class="text-info">Ready</span>
+                                        {% endif %}
+                                    {% endif %}
+                                </small>
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if not active_research %}
+                        <p class="text-muted">No active research projects.</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="stat-card">
+                    <h3>Technology Effects</h3>
+                    <p><i class="fas fa-industry"></i> Production Multiplier: <span class="text-success">{{ "{:.2f}".format(1.0) }}x</span></p>
+                    <p><i class="fas fa-leaf"></i> Consumption Efficiency: <span class="text-success">{{ "{:.2f}".format(1.0) }}x</span></p>
+                    <p><i class="fas fa-shield-alt"></i> Military Bonus: <span class="text-success">{{ "{:.2f}".format(1.0) }}x</span></p>
+                    <p><i class="fas fa-flask"></i> Research Bonus: <span class="text-success">{{ "{:.2f}".format(1.0) }}x</span></p>
+                    <p><i class="fas fa-user-secret"></i> Espionage Bonus: <span class="text-success">{{ "{:.2f}".format(1.0) }}x</span></p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="rankings-content" class="dashboard-content">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="stat-card">
+                    <h3>Economic Rankings</h3>
+                    <table class="table table-dark table-hover">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Nation</th>
+                                <th>GDP</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for n in top_economic[:5] %}
+                                <tr {% if n.id == nation.id %}class="table-primary"{% endif %}>
+                                    <td class="nation-rank economic-rank">{{ n.economic_rank }}</td>
+                                    <td class="nation-name">{{ n.name }}</td>
+                                    <td class="text-end">{{ "{:,.0f}".format(n.gdp) }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="stat-card">
+                    <h3>Military Rankings</h3>
+                    <table class="table table-dark table-hover">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Nation</th>
+                                <th>Power</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for n in top_military[:5] %}
+                                <tr {% if n.id == nation.id %}class="table-primary"{% endif %}>
+                                    <td class="nation-rank military-rank">{{ n.military_rank }}</td>
+                                    <td class="nation-name">{{ n.name }}</td>
+                                    <td class="text-end">{{ "{:,.0f}".format(n.military.offensive_power + n.military.defensive_power) }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="stat-card">
+                    <h3>Technology Rankings</h3>
+                    <table class="table table-dark table-hover">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Nation</th>
+                                <th>Tech Level</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for n in top_technology[:5] %}
+                                <tr {% if n.id == nation.id %}class="table-primary"{% endif %}>
+                                    <td class="nation-rank tech-rank">{{ n.technology_rank }}</td>
+                                    <td class="nation-name">{{ n.name }}</td>
+                                    <td class="text-end">
+                                        {% set tech_sum = 0 %}
+                                        {% for tech in n.technologies %}
+                                            {% set tech_sum = tech_sum + tech.level %}
+                                        {% endfor %}
+                                        {{ tech_sum }}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="stat-card">
+                    <h3>Overall Rankings</h3>
+                    <table class="table table-dark table-hover">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Nation</th>
+                                <th>Score</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for n in top_overall[:5] %}
+                                <tr {% if n.id == nation.id %}class="table-primary"{% endif %}>
+                                    <td class="nation-rank overall-rank">{{ n.overall_rank }}</td>
+                                    <td class="nation-name">{{ n.name }}</td>
+                                    <td class="text-end">{{ 1000 - (n.overall_rank * 10) }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Population distribution chart
+    const populationCtx = document.getElementById('population-distribution-chart');
+    if (populationCtx) {
+        new Chart(populationCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Agriculture', 'Industry', 'Energy', 'Research', 'Military'],
+                datasets: [{
+                    data: [
+                        {{ nation.agriculture_population }}, 
+                        {{ nation.industry_population }}, 
+                        {{ nation.energy_population }}, 
+                        {{ nation.research_population }}, 
+                        {{ nation.military_population }}
+                    ],
+                    backgroundColor: [
+                        'rgba(0, 128, 0, 0.7)',    // Agriculture - Green
+                        'rgba(102, 51, 153, 0.7)', // Industry - Purple
+                        'rgba(255, 165, 0, 0.7)',  // Energy - Orange
+                        'rgba(0, 0, 255, 0.7)',    // Research - Blue
+                        'rgba(255, 0, 0, 0.7)'     // Military - Red
+                    ],
+                    borderColor: [
+                        'rgba(0, 128, 0, 1)',
+                        'rgba(102, 51, 153, 1)',
+                        'rgba(255, 165, 0, 1)',
+                        'rgba(0, 0, 255, 1)',
+                        'rgba(255, 0, 0, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                plugins: {
+                    legend: {
+                        position: 'right',
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const label = context.label || '';
+                                const value = context.raw || 0;
+                                return `${label}: ${value}%`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+    
+    // Military distribution chart
+    const militaryCtx = document.getElementById('military-distribution-chart');
+    if (militaryCtx) {
+        new Chart(militaryCtx, {
+            type: 'pie',
+            data: {
+                labels: ['Infantry', 'Tanks', 'Aircraft', 'Navy', 'Missiles'],
+                datasets: [{
+                    data: [
+                        {{ military.infantry * 1 }}, 
+                        {{ military.tanks * 10 }}, 
+                        {{ military.aircraft * 20 }}, 
+                        {{ military.navy * 30 }}, 
+                        {{ military.missiles * 50 }}
+                    ],
+                    backgroundColor: [
+                        'rgba(90, 120, 90, 0.7)',
+                        'rgba(160, 80, 50, 0.7)',
+                        'rgba(70, 130, 180, 0.7)',
+                        'rgba(0, 71, 171, 0.7)',
+                        'rgba(178, 34, 34, 0.7)'
+                    ],
+                    borderColor: [
+                        'rgba(90, 120, 90, 1)',
+                        'rgba(160, 80, 50, 1)',
+                        'rgba(70, 130, 180, 1)',
+                        'rgba(0, 71, 171, 1)',
+                        'rgba(178, 34, 34, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                plugins: {
+                    legend: {
+                        position: 'right',
+                    }
+                }
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,1092 @@
+{% extends "layout.html" %}
+
+{% block title %}Espionage Operations - {{ nation.name }}{% endblock %}
+
+{% block styles %}
+<style>
+    .spy-card {
+        background: rgba(30, 30, 40, 0.8);
+        border-radius: 8px;
+        margin-bottom: 15px;
+        padding: 15px;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .spy-card.discovered {
+        background: rgba(60, 30, 30, 0.8);
+        border: 1px solid #ff6b6b;
+    }
+    
+    .spy-card.mission-active {
+        border-left: 4px solid #0dcaf0;
+    }
+    
+    .spy-status {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        font-size: 0.8rem;
+    }
+    
+    .mission-progress {
+        height: 8px;
+        margin-top: 10px;
+    }
+    
+    .intel-report {
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+    
+    .intel-report:hover {
+        background-color: rgba(50, 50, 70, 0.8);
+    }
+    
+    .report-modal-content {
+        max-height: 80vh;
+        overflow-y: auto;
+    }
+    
+    .counter-intel-section {
+        background: rgba(20, 30, 50, 0.8);
+        border-radius: 8px;
+        padding: 15px;
+    }
+    
+    .report-quality {
+        display: inline-block;
+        height: 12px;
+        width: 12px;
+        border-radius: 50%;
+        margin-right: 3px;
+    }
+    
+    .quality-1 { background-color: #ff6b6b; }
+    .quality-2 { background-color: #f39c12; }
+    .quality-3 { background-color: #ffbe0b; }
+    .quality-4 { background-color: #52b788; }
+    .quality-5 { background-color: #00b4d8; }
+    
+    .section-title {
+        border-bottom: 1px solid rgba(200, 200, 200, 0.2);
+        padding-bottom: 10px;
+        margin-bottom: 20px;
+    }
+    
+    .spy-specialization {
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: #ccc;
+    }
+    
+    .spy-skill {
+        display: inline-block;
+        margin-left: 5px;
+    }
+    
+    .cover-meter {
+        display: flex;
+        height: 6px;
+        width: 100%;
+        background: rgba(20, 20, 20, 0.6);
+        margin-top: 5px;
+        border-radius: 3px;
+        overflow: hidden;
+    }
+    
+    .cover-fill {
+        height: 100%;
+        transition: width 0.3s;
+    }
+    
+    .tab-pane {
+        padding: 20px 0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="display-6 mb-4">
+                <i class="bi bi-incognito me-2"></i> Espionage Operations
+            </h1>
+            <p class="lead">
+                Manage your spy network, gather intelligence, and protect your nation from foreign espionage.
+            </p>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-12">
+            <ul class="nav nav-tabs" id="espionageTab" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="spy-network-tab" data-bs-toggle="tab" data-bs-target="#spy-network" type="button" role="tab" aria-controls="spy-network" aria-selected="true">Spy Network</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="intel-tab" data-bs-toggle="tab" data-bs-target="#intel" type="button" role="tab" aria-controls="intel" aria-selected="false">Intelligence</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="counter-intel-tab" data-bs-toggle="tab" data-bs-target="#counter-intel" type="button" role="tab" aria-controls="counter-intel" aria-selected="false">Counter-Intelligence</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="missions-tab" data-bs-toggle="tab" data-bs-target="#missions" type="button" role="tab" aria-controls="missions" aria-selected="false">Mission History</button>
+                </li>
+            </ul>
+            
+            <div class="tab-content" id="espionageTabContent">
+                <!-- SPY NETWORK TAB -->
+                <div class="tab-pane fade show active" id="spy-network" role="tabpanel" aria-labelledby="spy-network-tab">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="card shadow-sm mb-4">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <h5 class="mb-0">Deployed Spies</h5>
+                                    <span>{{ deployed_spies|length }} / {{ military.spies }}</span>
+                                </div>
+                                <div class="card-body">
+                                    {% if deployed_spies %}
+                                        {% for spy in deployed_spies %}
+                                            <div class="spy-card {% if spy.is_discovered %}discovered{% endif %} {% if spy.active_mission %}mission-active{% endif %}">
+                                                <div class="row">
+                                                    <div class="col-md-6">
+                                                        <h5>Spy in {{ spy.target_nation }}</h5>
+                                                        <div class="spy-specialization">
+                                                            {{ spy.specialization }} specialist
+                                                            <span class="spy-skill">
+                                                                {% for i in range(spy.skill_level) %}
+                                                                    <i class="bi bi-star-fill text-warning"></i>
+                                                                {% endfor %}
+                                                                {% for i in range(5 - spy.skill_level) %}
+                                                                    <i class="bi bi-star text-muted"></i>
+                                                                {% endfor %}
+                                                            </span>
+                                                        </div>
+                                                        <div class="mt-2">
+                                                            <small class="text-muted">
+                                                                Deployed: {{ spy.deployed_since }} ({{ spy.days_deployed }} days)
+                                                            </small>
+                                                            <div class="d-flex justify-content-between align-items-center mt-1">
+                                                                <small class="text-muted">Cover strength:</small>
+                                                                <small class="text-muted">{{ spy.cover_strength|round|int }}%</small>
+                                                            </div>
+                                                            <div class="cover-meter">
+                                                                <div class="cover-fill {% if spy.cover_strength > 70 %}bg-success{% elif spy.cover_strength > 30 %}bg-warning{% else %}bg-danger{% endif %}" style="width: {{ spy.cover_strength }}%;"></div>
+                                                            </div>
+                                                            <div class="d-flex justify-content-between align-items-center mt-1">
+                                                                <small class="text-muted">Intel level: {{ spy.intel_level }}</small>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        {% if spy.is_discovered %}
+                                                            <div class="spy-status">
+                                                                <span class="badge bg-danger">Discovered</span>
+                                                            </div>
+                                                            <div class="alert alert-danger mt-2">
+                                                                <i class="bi bi-exclamation-triangle-fill"></i> This spy has been discovered and can no longer conduct missions.
+                                                            </div>
+                                                            <form action="{{ url_for('espionage.recall_spy') }}" method="POST" class="mt-2">
+                                                                <input type="hidden" name="spy_id" value="{{ spy.id }}">
+                                                                <button type="submit" class="btn btn-outline-danger btn-sm">
+                                                                    <i class="bi bi-box-arrow-left"></i> Recall Spy
+                                                                </button>
+                                                            </form>
+                                                        {% elif spy.active_mission %}
+                                                            <div class="spy-status">
+                                                                <span class="badge bg-info">On Mission</span>
+                                                            </div>
+                                                            <div class="mt-2">
+                                                                <h6>{{ spy.active_mission.type|replace('_', ' ')|title }}</h6>
+                                                                <div class="d-flex justify-content-between">
+                                                                    <small class="text-muted">Started: {{ spy.active_mission.start_date }}</small>
+                                                                    <small class="text-muted">ETA: {{ spy.active_mission.completion_date }}</small>
+                                                                </div>
+                                                                <div class="progress mission-progress">
+                                                                    <div 
+                                                                        class="progress-bar bg-info" 
+                                                                        role="progressbar" 
+                                                                        style="width: {{ spy.active_mission.progress }}%;" 
+                                                                        aria-valuenow="{{ spy.active_mission.progress }}" 
+                                                                        aria-valuemin="0" 
+                                                                        aria-valuemax="100">
+                                                                    </div>
+                                                                </div>
+                                                                <div class="d-flex justify-content-between">
+                                                                    <small class="text-muted">Success chance: {{ spy.active_mission.success_chance|round|int }}%</small>
+                                                                </div>
+                                                            </div>
+                                                        {% else %}
+                                                            <div class="spy-status">
+                                                                <span class="badge bg-success">Active</span>
+                                                            </div>
+                                                            <h6>Assign Mission</h6>
+                                                            <form action="{{ url_for('espionage.assign_mission') }}" method="POST">
+                                                                <input type="hidden" name="spy_id" value="{{ spy.id }}">
+                                                                <select name="mission_type" class="form-select form-select-sm mb-2">
+                                                                    <option value="gather_intel">Gather Intelligence (Low Risk)</option>
+                                                                    <option value="sabotage_resources">Sabotage Resources (Medium Risk)</option>
+                                                                    <option value="sabotage_military">Sabotage Military (High Risk)</option>
+                                                                    <option value="steal_technology">Steal Technology (Very High Risk)</option>
+                                                                    <option value="monitor_diplomacy">Monitor Diplomacy (Low Risk)</option>
+                                                                </select>
+                                                                <div class="d-flex">
+                                                                    <button type="submit" class="btn btn-primary btn-sm">
+                                                                        <i class="bi bi-play-fill"></i> Start Mission
+                                                                    </button>
+                                                                    <form action="{{ url_for('espionage.recall_spy') }}" method="POST" class="ms-2">
+                                                                        <input type="hidden" name="spy_id" value="{{ spy.id }}">
+                                                                        <button type="submit" class="btn btn-outline-danger btn-sm">
+                                                                            <i class="bi bi-box-arrow-left"></i> Recall
+                                                                        </button>
+                                                                    </form>
+                                                                </div>
+                                                            </form>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        {% endfor %}
+                                    {% else %}
+                                        <div class="alert alert-info">
+                                            <i class="bi bi-info-circle-fill"></i> You have no spies deployed. Deploy a spy to gather intelligence on other nations.
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <div class="card shadow-sm mb-4">
+                                <div class="card-header">
+                                    <h5 class="mb-0">Spy Headquarters</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <h6>Spy Status</h6>
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <span>Total spies:</span>
+                                            <span>{{ military.spies }}</span>
+                                        </div>
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <span>Deployed spies:</span>
+                                            <span>{{ deployed_spies|length }}</span>
+                                        </div>
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <span>Available spies:</span>
+                                            <span>{{ available_spies }}</span>
+                                        </div>
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <span>Maximum capacity:</span>
+                                            <span>{{ max_spies }}</span>
+                                        </div>
+                                        <div class="progress mt-2" style="height: 10px;">
+                                            <div class="progress-bar bg-primary" role="progressbar" style="width: {{ (military.spies / max_spies * 100)|round|int }}%;" aria-valuenow="{{ military.spies }}" aria-valuemin="0" aria-valuemax="{{ max_spies }}"></div>
+                                        </div>
+                                    </div>
+                                    
+                                    <hr>
+                                    
+                                    {% if available_spies > 0 and potential_targets %}
+                                        <h6>Deploy Spy</h6>
+                                        <form action="{{ url_for('espionage.deploy_spy') }}" method="POST">
+                                            <div class="mb-3">
+                                                <label class="form-label">Target Nation</label>
+                                                <select name="target_nation_id" class="form-select form-select-sm">
+                                                    {% for target in potential_targets %}
+                                                        <option value="{{ target.id }}">{{ target.name }}</option>
+                                                    {% endfor %}
+                                                </select>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label class="form-label">Specialization</label>
+                                                <select name="specialization" class="form-select form-select-sm">
+                                                    <option value="general">General Intelligence</option>
+                                                    <option value="military">Military Intelligence</option>
+                                                    <option value="economic">Economic Intelligence</option>
+                                                    <option value="technological">Technological Intelligence</option>
+                                                    <option value="diplomatic">Diplomatic Intelligence</option>
+                                                </select>
+                                            </div>
+                                            <button type="submit" class="btn btn-primary">
+                                                <i class="bi bi-person-gear"></i> Deploy Spy
+                                            </button>
+                                        </form>
+                                    {% elif military.spies < max_spies %}
+                                        <h6>Train New Spy</h6>
+                                        <form action="{{ url_for('espionage.train_spy') }}" method="POST">
+                                            <div class="mb-3">
+                                                <label class="form-label">Specialization</label>
+                                                <select name="specialization" class="form-select form-select-sm">
+                                                    <option value="general">General Intelligence</option>
+                                                    <option value="military">Military Intelligence</option>
+                                                    <option value="economic">Economic Intelligence</option>
+                                                    <option value="technological">Technological Intelligence</option>
+                                                    <option value="diplomatic">Diplomatic Intelligence</option>
+                                                </select>
+                                            </div>
+                                            <div class="alert alert-info small">
+                                                <i class="bi bi-info-circle-fill"></i> Training a spy costs 5,000 currency and 50 technology points.
+                                            </div>
+                                            <button type="submit" class="btn btn-primary">
+                                                <i class="bi bi-person-plus"></i> Train Spy
+                                            </button>
+                                        </form>
+                                    {% else %}
+                                        <div class="alert alert-warning">
+                                            <i class="bi bi-exclamation-triangle-fill"></i> You have reached your maximum spy capacity. Improve your intelligence technology to train more spies.
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- INTELLIGENCE TAB -->
+                <div class="tab-pane fade" id="intel" role="tabpanel" aria-labelledby="intel-tab">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="card shadow-sm mb-4">
+                                <div class="card-header">
+                                    <h5 class="mb-0">Intelligence Reports</h5>
+                                </div>
+                                <div class="card-body">
+                                    {% if intel_reports %}
+                                        <div class="table-responsive">
+                                            <table class="table table-hover">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Date</th>
+                                                        <th>Target</th>
+                                                        <th>Type</th>
+                                                        <th>Quality</th>
+                                                        <th>Actions</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {% for report in intel_reports %}
+                                                        <tr class="intel-report" data-bs-toggle="modal" data-bs-target="#reportModal" data-report-id="{{ report.id }}">
+                                                            <td>{{ report.report_date }}</td>
+                                                            <td>{{ report.target_nation }}</td>
+                                                            <td>{{ report.report_type|replace('_', ' ')|title }}</td>
+                                                            <td>
+                                                                {% for i in range(report.intel_quality) %}
+                                                                    <span class="report-quality quality-{{ report.intel_quality }}"></span>
+                                                                {% endfor %}
+                                                            </td>
+                                                            <td>
+                                                                <button class="btn btn-sm btn-outline-info view-report-btn" data-report-id="{{ report.id }}">
+                                                                    <i class="bi bi-eye"></i> View
+                                                                </button>
+                                                            </td>
+                                                        </tr>
+                                                    {% endfor %}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    {% else %}
+                                        <div class="alert alert-info">
+                                            <i class="bi bi-info-circle-fill"></i> You have no intelligence reports. Deploy spies and assign them missions to gather intelligence.
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- COUNTER-INTELLIGENCE TAB -->
+                <div class="tab-pane fade" id="counter-intel" role="tabpanel" aria-labelledby="counter-intel-tab">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="card shadow-sm mb-4">
+                                <div class="card-header">
+                                    <h5 class="mb-0">Counter-Intelligence Operations</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="counter-intel-section mb-4">
+                                                <h5>Counter-Intelligence Status</h5>
+                                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                                    <span>Current level:</span>
+                                                    <span class="badge bg-info">{{ counter_intelligence }}</span>
+                                                </div>
+                                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                                    <span>Espionage Defense Power:</span>
+                                                    <span>{{ (military.espionage_power / 100)|round|int }}</span>
+                                                </div>
+                                                
+                                                <div class="alert alert-secondary mt-3">
+                                                    <p class="mb-0"><i class="bi bi-shield-check"></i> Counter-intelligence provides protection against foreign spies and improves your ability to detect them.</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="col-md-6">
+                                            <div class="counter-intel-section">
+                                                <h5>Counter-Intelligence Operations</h5>
+                                                
+                                                <form action="{{ url_for('espionage.run_counter_intelligence_sweep') }}" method="POST" class="mb-3">
+                                                    <button type="submit" class="btn btn-danger">
+                                                        <i class="bi bi-search"></i> Run Counter-Intelligence Sweep
+                                                    </button>
+                                                    <div class="small text-muted mt-2">
+                                                        Costs 2,000 currency and 50 energy. Actively searches for foreign spies in your nation.
+                                                    </div>
+                                                </form>
+                                                
+                                                <hr class="my-3">
+                                                
+                                                <h5>Improve Counter-Intelligence</h5>
+                                                <form action="{{ url_for('espionage.improve_counter_intelligence') }}" method="POST">
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Levels to increase</label>
+                                                        <select name="levels" class="form-select">
+                                                            <option value="1">1 Level</option>
+                                                            <option value="2">2 Levels</option>
+                                                            <option value="3">3 Levels</option>
+                                                        </select>
+                                                    </div>
+                                                    
+                                                    <div class="alert alert-info small">
+                                                        <i class="bi bi-info-circle-fill"></i> Improving counter-intelligence costs 5,000 currency and 200 technology points per level. Cost increases with each level.
+                                                    </div>
+                                                    
+                                                    <button type="submit" class="btn btn-primary">
+                                                        <i class="bi bi-shield-plus"></i> Improve Counter-Intelligence
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- MISSIONS HISTORY TAB -->
+                <div class="tab-pane fade" id="missions" role="tabpanel" aria-labelledby="missions-tab">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="card shadow-sm mb-4">
+                                <div class="card-header">
+                                    <h5 class="mb-0">Mission History</h5>
+                                </div>
+                                <div class="card-body">
+                                    {% if missions %}
+                                        <div class="table-responsive">
+                                            <table class="table">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Date</th>
+                                                        <th>Mission Type</th>
+                                                        <th>Target</th>
+                                                        <th>Outcome</th>
+                                                        <th>Details</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {% for mission in missions %}
+                                                        <tr>
+                                                            <td>{{ mission.completion_date }}</td>
+                                                            <td>{{ mission.type|replace('_', ' ')|title }}</td>
+                                                            <td>{{ mission.target_nation }}</td>
+                                                            <td>
+                                                                {% if mission.success %}
+                                                                    <span class="badge bg-success">Success</span>
+                                                                {% else %}
+                                                                    <span class="badge bg-danger">Failed</span>
+                                                                {% endif %}
+                                                            </td>
+                                                            <td>{{ mission.outcome }}</td>
+                                                        </tr>
+                                                    {% endfor %}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    {% else %}
+                                        <div class="alert alert-info">
+                                            <i class="bi bi-info-circle-fill"></i> No completed missions yet. Assign missions to your spies to see results here.
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Intelligence Report Modal -->
+<div class="modal fade" id="reportModal" tabindex="-1" aria-labelledby="reportModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="reportModalLabel">Intelligence Report</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body report-modal-content">
+                <div class="text-center my-5" id="reportLoading">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-2">Loading report data...</p>
+                </div>
+                <div id="reportData" style="display: none;">
+                    <div class="d-flex justify-content-between mb-3">
+                        <div>
+                            <h5 id="reportTargetNation"></h5>
+                            <p class="text-muted mb-0" id="reportDate"></p>
+                        </div>
+                        <div>
+                            <span class="badge bg-info" id="reportType"></span>
+                            <div class="mt-1 text-end">
+                                Quality: <span id="reportQuality"></span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div id="reportContent"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Handle report viewing
+        const viewReportButtons = document.querySelectorAll('.view-report-btn, .intel-report');
+        viewReportButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const reportId = this.dataset.reportId || this.getAttribute('data-report-id');
+                loadReportData(reportId);
+            });
+        });
+        
+        function loadReportData(reportId) {
+            // Show loading state
+            document.getElementById('reportLoading').style.display = 'block';
+            document.getElementById('reportData').style.display = 'none';
+            
+            // Fetch report data
+            fetch(`/api/espionage/report/${reportId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        displayReport(data.report);
+                    } else {
+                        alert('Error loading report: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while loading the report.');
+                });
+        }
+        
+        function displayReport(report) {
+            // Fill basic report data
+            document.getElementById('reportTargetNation').textContent = report.target_nation;
+            document.getElementById('reportDate').textContent = 'Report Date: ' + report.report_date;
+            document.getElementById('reportType').textContent = report.report_type.replace('_', ' ').charAt(0).toUpperCase() + report.report_type.slice(1);
+            
+            // Display quality stars
+            const qualitySpan = document.getElementById('reportQuality');
+            qualitySpan.innerHTML = '';
+            for (let i = 0; i < report.intel_quality; i++) {
+                qualitySpan.innerHTML += '<i class="bi bi-star-fill text-warning"></i>';
+            }
+            for (let i = report.intel_quality; i < 5; i++) {
+                qualitySpan.innerHTML += '<i class="bi bi-star text-muted"></i>';
+            }
+            
+            // Build the report content based on type
+            const contentDiv = document.getElementById('reportContent');
+            contentDiv.innerHTML = '';
+            
+            // Start with basic info available in all reports
+            const basicInfo = document.createElement('div');
+            basicInfo.innerHTML = `
+                <h6>Basic Information</h6>
+                <p>Nation: ${report.content.nation_name || 'Unknown'}</p>
+                <p>Continent: ${report.content.continent || 'Unknown'}</p>
+            `;
+            contentDiv.appendChild(basicInfo);
+            
+            // Add detailed information based on report type
+            if (report.report_type === 'military' || report.report_type === 'general') {
+                addMilitaryInfo(contentDiv, report.content);
+            }
+            
+            if (report.report_type === 'economic' || report.report_type === 'general') {
+                addEconomicInfo(contentDiv, report.content);
+            }
+            
+            if (report.report_type === 'technological' || report.report_type === 'general') {
+                addTechnologyInfo(contentDiv, report.content);
+            }
+            
+            if (report.report_type === 'diplomatic' || report.report_type === 'general') {
+                addDiplomaticInfo(contentDiv, report.content);
+            }
+            
+            // Hide loading, show report
+            document.getElementById('reportLoading').style.display = 'none';
+            document.getElementById('reportData').style.display = 'block';
+        }
+        
+        function addMilitaryInfo(contentDiv, content) {
+            if (!content.military_power) return;
+            
+            const militaryDiv = document.createElement('div');
+            militaryDiv.classList.add('mt-4');
+            militaryDiv.innerHTML = `
+                <h6>Military Intelligence</h6>
+                <div class="row">
+                    <div class="col-md-6">
+                        <p>Offensive Power: ${content.military_power.offensive.toLocaleString()}</p>
+                        <p>Defensive Power: ${content.military_power.defensive.toLocaleString()}</p>
+                    </div>
+                </div>
+            `;
+            
+            // Add unit information if available
+            if (content.military_units) {
+                const unitsTable = document.createElement('table');
+                unitsTable.classList.add('table', 'table-sm', 'mt-2');
+                unitsTable.innerHTML = `
+                    <thead>
+                        <tr>
+                            <th>Unit Type</th>
+                            <th>Estimated Count</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${Object.entries(content.military_units).map(([unit, count]) => `
+                            <tr>
+                                <td>${unit.charAt(0).toUpperCase() + unit.slice(1)}</td>
+                                <td>${count.toLocaleString()}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                `;
+                militaryDiv.appendChild(unitsTable);
+            }
+            
+            // Add defensive structures if available
+            if (content.defensive_structures) {
+                const defensesTable = document.createElement('table');
+                defensesTable.classList.add('table', 'table-sm', 'mt-3');
+                defensesTable.innerHTML = `
+                    <thead>
+                        <tr>
+                            <th>Defense Type</th>
+                            <th>Estimated Count</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${Object.entries(content.defensive_structures).map(([defense, count]) => `
+                            <tr>
+                                <td>${defense.replace('_', ' ').charAt(0).toUpperCase() + defense.slice(1)}</td>
+                                <td>${count.toLocaleString()}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                `;
+                militaryDiv.appendChild(defensesTable);
+            }
+            
+            // Add counter-intelligence info if available
+            if (content.counter_intelligence !== undefined) {
+                const counterIntelDiv = document.createElement('div');
+                counterIntelDiv.classList.add('mt-3');
+                counterIntelDiv.innerHTML = `
+                    <p>Counter-Intelligence Level: ${content.counter_intelligence}</p>
+                    <p>Espionage Power: ${content.espionage_power.toLocaleString()}</p>
+                `;
+                militaryDiv.appendChild(counterIntelDiv);
+            }
+            
+            contentDiv.appendChild(militaryDiv);
+        }
+        
+        function addEconomicInfo(contentDiv, content) {
+            if (!content.economic && !content.resources) return;
+            
+            const economicDiv = document.createElement('div');
+            economicDiv.classList.add('mt-4');
+            economicDiv.innerHTML = `<h6>Economic Intelligence</h6>`;
+            
+            // Add GDP and tax info if available
+            if (content.economic) {
+                economicDiv.innerHTML += `
+                    <p>GDP: ${content.economic.gdp.toLocaleString()}</p>
+                    <p>Tax Rate: ${content.economic.tax_rate}%</p>
+                `;
+            }
+            
+            // Add resources if available
+            if (content.resources) {
+                const resourcesTable = document.createElement('table');
+                resourcesTable.classList.add('table', 'table-sm', 'mt-2');
+                resourcesTable.innerHTML = `
+                    <thead>
+                        <tr>
+                            <th>Resource</th>
+                            <th>Estimated Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${Object.entries(content.resources).map(([resource, amount]) => `
+                            <tr>
+                                <td>${resource.replace('_', ' ').charAt(0).toUpperCase() + resource.slice(1)}</td>
+                                <td>${amount.toLocaleString()}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                `;
+                economicDiv.appendChild(resourcesTable);
+            }
+            
+            // Add production rates if available
+            if (content.production_rates) {
+                const productionDiv = document.createElement('div');
+                productionDiv.classList.add('mt-3');
+                productionDiv.innerHTML = `<h6>Production Rates (per hour)</h6>`;
+                
+                const productionTable = document.createElement('table');
+                productionTable.classList.add('table', 'table-sm');
+                productionTable.innerHTML = `
+                    <thead>
+                        <tr>
+                            <th>Resource</th>
+                            <th>Production Rate</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${Object.entries(content.production_rates).map(([resource, rate]) => `
+                            <tr>
+                                <td>${resource.replace('_', ' ').charAt(0).toUpperCase() + resource.slice(1)}</td>
+                                <td>${rate.toLocaleString()}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                `;
+                productionDiv.appendChild(productionTable);
+                economicDiv.appendChild(productionDiv);
+            }
+            
+            // Add consumption rates if available
+            if (content.consumption_rates) {
+                const consumptionDiv = document.createElement('div');
+                consumptionDiv.classList.add('mt-3');
+                consumptionDiv.innerHTML = `<h6>Consumption Rates (per hour)</h6>`;
+                
+                const consumptionTable = document.createElement('table');
+                consumptionTable.classList.add('table', 'table-sm');
+                consumptionTable.innerHTML = `
+                    <thead>
+                        <tr>
+                            <th>Resource</th>
+                            <th>Consumption Rate</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${Object.entries(content.consumption_rates).map(([resource, rate]) => `
+                            <tr>
+                                <td>${resource.replace('_', ' ').charAt(0).toUpperCase() + resource.slice(1)}</td>
+                                <td>${rate.toLocaleString()}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                `;
+                consumptionDiv.appendChild(consumptionTable);
+                economicDiv.appendChild(consumptionDiv);
+            }
+            
+            // Add population distribution if available
+            if (content.population_distribution) {
+                const populationDiv = document.createElement('div');
+                populationDiv.classList.add('mt-3');
+                populationDiv.innerHTML = `<h6>Population Distribution</h6>`;
+                
+                const populationTable = document.createElement('table');
+                populationTable.classList.add('table', 'table-sm');
+                populationTable.innerHTML = `
+                    <thead>
+                        <tr>
+                            <th>Sector</th>
+                            <th>Percentage</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${Object.entries(content.population_distribution).map(([sector, percentage]) => `
+                            <tr>
+                                <td>${sector.charAt(0).toUpperCase() + sector.slice(1)}</td>
+                                <td>${percentage}%</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                `;
+                populationDiv.appendChild(populationTable);
+                economicDiv.appendChild(populationDiv);
+            }
+            
+            contentDiv.appendChild(economicDiv);
+        }
+        
+        function addTechnologyInfo(contentDiv, content) {
+            if (!content.technology) return;
+            
+            const techDiv = document.createElement('div');
+            techDiv.classList.add('mt-4');
+            techDiv.innerHTML = `
+                <h6>Technological Intelligence</h6>
+                <p>Researched Technologies: ${content.technology.researched_count} / ${content.technology.total_count}</p>
+            `;
+            
+            // Add technology categories if available
+            if (content.technology.categories) {
+                const categoriesDiv = document.createElement('div');
+                categoriesDiv.classList.add('mt-2');
+                categoriesDiv.innerHTML = `<h6>Technology Categories</h6>`;
+                
+                const categoriesTable = document.createElement('table');
+                categoriesTable.classList.add('table', 'table-sm');
+                categoriesTable.innerHTML = `
+                    <thead>
+                        <tr>
+                            <th>Category</th>
+                            <th>Count</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${Object.entries(content.technology.categories).map(([category, count]) => `
+                            <tr>
+                                <td>${category.charAt(0).toUpperCase() + category.slice(1)}</td>
+                                <td>${count}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                `;
+                categoriesDiv.appendChild(categoriesTable);
+                techDiv.appendChild(categoriesDiv);
+            }
+            
+            // Add sample technologies if available
+            if (content.technology.sample_techs) {
+                const samplesDiv = document.createElement('div');
+                samplesDiv.classList.add('mt-3');
+                samplesDiv.innerHTML = `<h6>Sample Technologies</h6>`;
+                
+                const samplesTable = document.createElement('table');
+                samplesTable.classList.add('table', 'table-sm');
+                samplesTable.innerHTML = `
+                    <thead>
+                        <tr>
+                            <th>Technology</th>
+                            <th>Level</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${content.technology.sample_techs.map(tech => `
+                            <tr>
+                                <td>${tech.name}</td>
+                                <td>${tech.level}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                `;
+                samplesDiv.appendChild(samplesTable);
+                techDiv.appendChild(samplesDiv);
+            }
+            
+            // Add current research if available
+            if (content.technology.current_research) {
+                const researchDiv = document.createElement('div');
+                researchDiv.classList.add('mt-3');
+                researchDiv.innerHTML = `<h6>Current Research</h6>`;
+                
+                const researchTable = document.createElement('table');
+                researchTable.classList.add('table', 'table-sm');
+                researchTable.innerHTML = `
+                    <thead>
+                        <tr>
+                            <th>Technology</th>
+                            <th>Progress</th>
+                            <th>Estimated Completion</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${content.technology.current_research.map(research => `
+                            <tr>
+                                <td>${research.name}</td>
+                                <td>${Math.round(research.progress * 100)}%</td>
+                                <td>${research.estimated_completion || 'Unknown'}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                `;
+                researchDiv.appendChild(researchTable);
+                techDiv.appendChild(researchDiv);
+            }
+            
+            // Add detailed tech tree if available
+            if (content.technology.tech_tree) {
+                const treeDiv = document.createElement('div');
+                treeDiv.classList.add('mt-3');
+                treeDiv.innerHTML = `<h6>Technology Tree</h6>`;
+                
+                const treeTable = document.createElement('table');
+                treeTable.classList.add('table', 'table-sm');
+                treeTable.innerHTML = `
+                    <thead>
+                        <tr>
+                            <th>Technology</th>
+                            <th>Category</th>
+                            <th>Level</th>
+                            <th>Max Level</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${content.technology.tech_tree.map(tech => `
+                            <tr>
+                                <td>${tech.name}</td>
+                                <td>${tech.category}</td>
+                                <td>${tech.level}</td>
+                                <td>${tech.max_level}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                `;
+                treeDiv.appendChild(treeTable);
+                techDiv.appendChild(treeDiv);
+            }
+            
+            contentDiv.appendChild(techDiv);
+        }
+        
+        function addDiplomaticInfo(contentDiv, content) {
+            if (!content.diplomacy) return;
+            
+            const diplomacyDiv = document.createElement('div');
+            diplomacyDiv.classList.add('mt-4');
+            diplomacyDiv.innerHTML = `
+                <h6>Diplomatic Intelligence</h6>
+                <p>Active Wars: ${content.diplomacy.active_wars}</p>
+                <p>Active Alliances: ${content.diplomacy.alliances}</p>
+            `;
+            
+            // Add war details if available
+            if (content.diplomacy.wars && content.diplomacy.wars.length > 0) {
+                const warsDiv = document.createElement('div');
+                warsDiv.classList.add('mt-3');
+                warsDiv.innerHTML = `<h6>Active Wars</h6>`;
+                
+                const warsTable = document.createElement('table');
+                warsTable.classList.add('table', 'table-sm');
+                warsTable.innerHTML = `
+                    <thead>
+                        <tr>
+                            <th>Opponent</th>
+                            <th>Role</th>
+                            <th>Start Date</th>
+                            ${content.diplomacy.wars[0].casualties !== undefined ? '<th>Casualties</th>' : ''}
+                            ${content.diplomacy.wars[0].peace_proposed !== undefined ? '<th>Peace Proposed</th>' : ''}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${content.diplomacy.wars.map(war => `
+                            <tr>
+                                <td>${war.opponent}</td>
+                                <td>${war.is_aggressor ? 'Aggressor' : 'Defender'}</td>
+                                <td>${war.start_date}</td>
+                                ${war.casualties !== undefined ? `<td>${war.casualties.toLocaleString()}</td>` : ''}
+                                ${war.peace_proposed !== undefined ? `<td>${war.peace_proposed ? 'Yes' : 'No'}</td>` : ''}
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                `;
+                warsDiv.appendChild(warsTable);
+                diplomacyDiv.appendChild(warsDiv);
+            }
+            
+            // Add alliance details if available
+            if (content.diplomacy.alliances && content.diplomacy.alliances.length > 0) {
+                const alliancesDiv = document.createElement('div');
+                alliancesDiv.classList.add('mt-3');
+                alliancesDiv.innerHTML = `<h6>Active Alliances</h6>`;
+                
+                const alliancesTable = document.createElement('table');
+                alliancesTable.classList.add('table', 'table-sm');
+                alliancesTable.innerHTML = `
+                    <thead>
+                        <tr>
+                            <th>Ally</th>
+                            <th>Formed Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${content.diplomacy.alliances.map(alliance => `
+                            <tr>
+                                <td>${alliance.ally}</td>
+                                <td>${alliance.formed_date}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                `;
+                alliancesDiv.appendChild(alliancesTable);
+                diplomacyDiv.appendChild(alliancesDiv);
+            }
+            
+            // Add transit rights details if available
+            if (content.diplomacy.transit_rights && content.diplomacy.transit_rights.length > 0) {
+                const transitDiv = document.createElement('div');
+                transitDiv.classList.add('mt-3');
+                transitDiv.innerHTML = `<h6>Transit Rights</h6>`;
+                
+                const transitTable = document.createElement('table');
+                transitTable.classList.add('table', 'table-sm');
+                transitTable.innerHTML = `
+                    <thead>
+                        <tr>
+                            <th>Nation</th>
+                            <th>Status</th>
+                            <th>Granted Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${content.diplomacy.transit_rights.map(transit => `
+                            <tr>
+                                <td>${transit.nation}</td>
+                                <td>${transit.is_grantor ? 'Granted To' : 'Received From'}</td>
+                                <td>${transit.granted_date}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                `;
+                transitDiv.appendChild(transitTable);
+                diplomacyDiv.appendChild(transitDiv);
+            }
+            
+            contentDiv.appendChild(diplomacyDiv);
+        }
+    });
+</script>
+{% endblock %}

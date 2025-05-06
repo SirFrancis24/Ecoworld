@@ -1,0 +1,244 @@
+<!-- Global News Widget for Dashboard -->
+<div class="news-widget mb-0">
+    <div class="news-widget-header d-flex justify-content-between align-items-center">
+        <h4 class="mb-0"><i class="fas fa-newspaper"></i> Global News</h4>
+        <a href="{{ url_for('news.news_page') }}" class="btn btn-sm btn-outline-light">
+            <i class="fas fa-external-link-alt"></i>
+        </a>
+    </div>
+    <div class="news-widget-body p-0">
+        <div class="list-group list-group-flush news-list">
+            <!-- Articles will be loaded dynamically -->
+            <div id="dashboard-news-list" class="dashboard-news-list">
+                <div class="text-center py-4">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-2">Loading latest news...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="news-widget-footer">
+        <a href="{{ url_for('news.news_page') }}" class="btn btn-sm btn-primary w-100">
+            <i class="fas fa-newspaper"></i> Read Full News
+        </a>
+    </div>
+</div>
+
+<!-- Template for news articles -->
+<template id="news-article-template">
+    <a href="#" class="list-group-item list-group-item-action news-item">
+        <div class="d-flex justify-content-between">
+            <h6 class="mb-1 news-title"></h6>
+            <small class="news-category badge"></small>
+        </div>
+        <p class="mb-1 news-summary"></p>
+        <small class="text-muted d-flex justify-content-between">
+            <span class="news-date"></span>
+            <span class="news-importance"></span>
+        </small>
+    </a>
+</template>
+
+<script>
+    // Load the latest news when the page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        loadDashboardNews();
+    });
+    
+    function loadDashboardNews() {
+        // Fetch latest news articles from the API
+        fetch('/api/news/latest?limit=5')
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    displayDashboardNews(data.data);
+                } else {
+                    showNewsError('Could not load news');
+                }
+            })
+            .catch(error => {
+                console.error('Error loading news:', error);
+                showNewsError('Error connecting to news service');
+            });
+    }
+    
+    function displayDashboardNews(articles) {
+        const newsContainer = document.getElementById('dashboard-news-list');
+        const template = document.getElementById('news-article-template');
+        
+        // Clear loading indicator
+        newsContainer.innerHTML = '';
+        
+        if (articles.length === 0) {
+            newsContainer.innerHTML = `
+                <div class="text-center py-4">
+                    <p class="text-muted">No recent news available.</p>
+                </div>
+            `;
+            return;
+        }
+        
+        // Create and append each article
+        articles.forEach(article => {
+            const clone = template.content.cloneNode(true);
+            
+            // Update the link
+            const link = clone.querySelector('.news-item');
+            link.href = `/news/${article.id}`;
+            
+            // Update content
+            clone.querySelector('.news-title').textContent = article.title;
+            clone.querySelector('.news-summary').textContent = article.summary;
+            clone.querySelector('.news-date').textContent = formatNewsDate(article.publication_date);
+            
+            // Category badge styling
+            const categoryBadge = clone.querySelector('.news-category');
+            categoryBadge.textContent = capitalizeFirst(article.category);
+            setCategoryStyle(categoryBadge, article.category);
+            
+            // Importance indicators
+            const importanceSpan = clone.querySelector('.news-importance');
+            setImportanceIndicator(importanceSpan, article.importance);
+            
+            // Featured articles styling
+            if (article.is_featured) {
+                link.classList.add('featured-news');
+                link.style.borderLeft = '4px solid var(--bs-primary)';
+            }
+            
+            newsContainer.appendChild(clone);
+        });
+    }
+    
+    function showNewsError(message) {
+        const newsContainer = document.getElementById('dashboard-news-list');
+        newsContainer.innerHTML = `
+            <div class="text-center py-4">
+                <p class="text-danger"><i class="fas fa-exclamation-triangle"></i> ${message}</p>
+                <button class="btn btn-sm btn-outline-primary mt-2" onclick="loadDashboardNews()">
+                    <i class="fas fa-sync"></i> Retry
+                </button>
+            </div>
+        `;
+    }
+    
+    function formatNewsDate(dateStr) {
+        const date = new Date(dateStr);
+        const now = new Date();
+        const diffMs = now - date;
+        const diffHrs = Math.floor(diffMs / (1000 * 60 * 60));
+        
+        if (diffHrs < 1) {
+            return 'Just now';
+        } else if (diffHrs < 24) {
+            return `${diffHrs} hour${diffHrs === 1 ? '' : 's'} ago`;
+        } else {
+            const day = date.getDate();
+            const month = date.toLocaleString('default', { month: 'short' });
+            return `${day} ${month}`;
+        }
+    }
+    
+    function capitalizeFirst(str) {
+        return str.charAt(0).toUpperCase() + str.slice(1);
+    }
+    
+    function setCategoryStyle(element, category) {
+        let bgClass = 'bg-secondary';
+        
+        switch (category) {
+            case 'market':
+                bgClass = 'bg-success';
+                break;
+            case 'war':
+                bgClass = 'bg-danger';
+                break;
+            case 'diplomacy':
+            case 'alliance':
+                bgClass = 'bg-primary';
+                break;
+            case 'technology':
+                bgClass = 'bg-info';
+                break;
+            case 'espionage':
+                bgClass = 'bg-warning text-dark';
+                break;
+            case 'ranking':
+                bgClass = 'bg-purple';
+                break;
+            case 'event':
+                bgClass = 'bg-dark';
+                break;
+        }
+        
+        element.classList.add(bgClass);
+    }
+    
+    function setImportanceIndicator(element, importance) {
+        let stars = '';
+        for (let i = 0; i < importance; i++) {
+            stars += '<i class="fas fa-star text-warning"></i>';
+        }
+        element.innerHTML = stars;
+    }
+</script>
+
+<style>
+    .dashboard-news-list {
+        max-height: 150px;
+        overflow-y: auto;
+    }
+    
+    .news-item {
+        padding: 0.75rem 1rem;
+        transition: background-color 0.2s;
+    }
+    
+    .news-item:hover {
+        background-color: rgba(0, 123, 255, 0.05);
+    }
+    
+    .news-title {
+        font-weight: 600;
+        margin-right: 10px;
+    }
+    
+    .news-summary {
+        font-size: 0.9rem;
+        color: var(--bs-secondary-color);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+    }
+    
+    .news-category {
+        font-size: 0.7rem;
+        padding: 0.25rem 0.5rem;
+    }
+    
+    .news-date {
+        font-size: 0.8rem;
+    }
+    
+    .news-importance {
+        font-size: 0.7rem;
+    }
+    
+    .news-importance .fa-star {
+        font-size: 0.7rem;
+        margin-left: 2px;
+    }
+    
+    .featured-news {
+        background-color: rgba(0, 123, 255, 0.03);
+    }
+    
+    .bg-purple {
+        background-color: #6f42c1;
+        color: white;
+    }
+</style>

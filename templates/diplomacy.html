@@ -1,0 +1,453 @@
+{% extends "layout.html" %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/diplomacy.css') }}">
+{% endblock %}
+
+{% block title %}Diplomacy - EcoWorld{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <h1 class="mb-4">Diplomacy</h1>
+    
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card bg-gradient-dark border-0">
+                <div class="card-body">
+                    <h3>Your Diplomatic Influence</h3>
+                    <p>Your nation's diplomatic influence affects how other nations perceive you and your ability to engage in successful diplomacy.</p>
+                    
+                    <div class="influence-meter">
+                        <div class="influence-fill" style="width: {{ diplomatic_influence }}%;"></div>
+                        <div class="influence-label">{{ diplomatic_influence|round|int }} / 100</div>
+                    </div>
+                    
+                    <div class="row mt-4">
+                        <div class="col-md-4">
+                            <div class="card bg-dark text-white">
+                                <div class="card-body">
+                                    <h5 class="card-title">Current Alliances</h5>
+                                    {% if diplomatic_data.alliances %}
+                                        <ul class="list-group list-group-flush bg-dark">
+                                            {% for alliance in diplomatic_data.alliances %}
+                                                <li class="list-group-item bg-dark text-white border-bottom border-secondary">
+                                                    <i class="fas fa-handshake text-success me-2"></i>
+                                                    {{ alliance.name }}
+                                                    <small class="text-muted d-block">
+                                                        Since {{ alliance.formed_date }}
+                                                    </small>
+                                                </li>
+                                            {% endfor %}
+                                        </ul>
+                                    {% else %}
+                                        <p class="card-text text-muted">No current alliances</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <div class="card bg-dark text-white">
+                                <div class="card-body">
+                                    <h5 class="card-title">Active Wars</h5>
+                                    {% if diplomatic_data.wars %}
+                                        <ul class="list-group list-group-flush bg-dark">
+                                            {% for war in diplomatic_data.wars %}
+                                                <li class="list-group-item bg-dark text-white border-bottom border-secondary">
+                                                    <i class="fas fa-bomb text-danger me-2"></i>
+                                                    {{ war.name }}
+                                                    <small class="text-muted d-block">
+                                                        Since {{ war.start_date }}
+                                                        {% if war.is_aggressor %}
+                                                            <span class="badge bg-danger">Aggressor</span>
+                                                        {% else %}
+                                                            <span class="badge bg-warning">Defender</span>
+                                                        {% endif %}
+                                                    </small>
+                                                </li>
+                                            {% endfor %}
+                                        </ul>
+                                    {% else %}
+                                        <p class="card-text text-muted">No active wars</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <div class="card bg-dark text-white">
+                                <div class="card-body">
+                                    <h5 class="card-title">Transit Rights</h5>
+                                    <p class="card-text small">Transit rights allow military units to pass through foreign territory without penalties.</p>
+                                    <a href="{{ url_for('diplomacy.transit_rights_view') }}" class="btn btn-sm btn-outline-info">
+                                        <i class="fas fa-route"></i> Manage Transit Rights
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-12 mb-4">
+            <div class="card bg-dark border-0">
+                <div class="card-header bg-dark bg-gradient border-0">
+                    <h3 class="mb-0">Diplomatic Relations Network</h3>
+                </div>
+                <div class="card-body">
+                    <div class="diplomacy-tree">
+                        <div class="row mb-4">
+                            <div class="col-md-12 text-center">
+                                <div class="nation-node self p-2 rounded mx-auto" style="max-width: 220px; background-color: #0d6efd; border: 2px solid #fff;">
+                                    <h5 class="mb-1">{{ nation.name }} (You)</h5>
+                                    <p class="mb-1 small">{{ nation.continent }}</p>
+                                    <p class="mb-0 small"><i class="fas fa-map-marker-alt"></i> Position: {{ nation.map_x|round|int }}°N, {{ nation.map_y|round|int }}°E</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Geo-spatial Visualization -->
+                        <div class="diplomacy-map-container mb-4">
+                            <h4 class="text-center mb-3"><i class="fas fa-globe"></i> Geopolitical Network</h4>
+                            <div class="diplomacy-map" style="position: relative; overflow: auto; width: 100%; height: 600px; min-width: 800px; min-height: 600px; border: 1px solid #333;">
+                                <!-- Aree continentali stilizzate -->
+                                <!-- Europa -->
+                                <div style="position: absolute; left: 40%; top: 10%; width: 25%; height: 30%; border: 2px dashed rgba(59, 130, 246, 0.15); border-radius: 40% 60% 60% 40%; background-color: rgba(59, 130, 246, 0.03); z-index: 1;">
+                                    <div style="position: absolute; bottom: 5px; left: 10px; color: rgba(59, 130, 246, 0.4); font-size: 12px; font-weight: bold;">EUROPA</div>
+                                </div>
+                                <!-- Nord America -->
+                                <div style="position: absolute; left: 5%; top: 5%; width: 25%; height: 25%; border: 2px dashed rgba(244, 114, 182, 0.15); border-radius: 60% 40% 50% 50%; background-color: rgba(244, 114, 182, 0.03); z-index: 1;">
+                                    <div style="position: absolute; bottom: 5px; left: 10px; color: rgba(244, 114, 182, 0.4); font-size: 12px; font-weight: bold;">NORD AMERICA</div>
+                                </div>
+                                <!-- Asia -->
+                                <div style="position: absolute; left: 60%; top: 15%; width: 30%; height: 40%; border: 2px dashed rgba(16, 185, 129, 0.15); border-radius: 50% 50% 40% 60%; background-color: rgba(16, 185, 129, 0.03); z-index: 1;">
+                                    <div style="position: absolute; bottom: 5px; left: 10px; color: rgba(16, 185, 129, 0.4); font-size: 12px; font-weight: bold;">ASIA</div>
+                                </div>
+                                <!-- Oceania -->
+                                <div style="position: absolute; left: 70%; top: 60%; width: 20%; height: 25%; border: 2px dashed rgba(251, 191, 36, 0.15); border-radius: 40% 60% 50% 50%; background-color: rgba(251, 191, 36, 0.03); z-index: 1;">
+                                    <div style="position: absolute; bottom: 5px; left: 10px; color: rgba(251, 191, 36, 0.4); font-size: 12px; font-weight: bold;">OCEANIA</div>
+                                </div>
+                                <!-- Africa -->
+                                <div style="position: absolute; left: 45%; top: 40%; width: 20%; height: 35%; border: 2px dashed rgba(239, 68, 68, 0.15); border-radius: 30% 70% 70% 30%; background-color: rgba(239, 68, 68, 0.03); z-index: 1;">
+                                    <div style="position: absolute; bottom: 5px; left: 10px; color: rgba(239, 68, 68, 0.4); font-size: 12px; font-weight: bold;">AFRICA</div>
+                                </div>
+                                <!-- Sud America -->
+                                <div style="position: absolute; left: 20%; top: 40%; width: 20%; height: 40%; border: 2px dashed rgba(139, 92, 246, 0.15); border-radius: 40% 60% 30% 70%; background-color: rgba(139, 92, 246, 0.03); z-index: 1;">
+                                    <div style="position: absolute; bottom: 5px; left: 10px; color: rgba(139, 92, 246, 0.4); font-size: 12px; font-weight: bold;">SUD AMERICA</div>
+                                </div>
+                                <!-- Nodo della tua nazione -->
+                                <div class="nation-map-node self" 
+                                     style="left: {{ nation.map_x }}%; top: {{ nation.map_y }}%; background-color: #3b82f6; width: 40px; height: 40px; z-index: 30;" 
+                                     title="{{ nation.name }} (You)">
+                                    <i class="fas fa-flag"></i>
+                                </div>
+                                
+                                <!-- Etichetta della tua nazione -->
+                                <div style="position: absolute; left: {{ nation.map_x }}%; top: calc({{ nation.map_y }}% - 25px); transform: translateX(-50%); background-color: rgba(0,0,0,0.9); padding: 2px 6px; border-radius: 3px; font-size: 12px; white-space: nowrap; z-index: 31; color: white; font-weight: bold;">
+                                    {{ nation.name }} (You)
+                                </div>
+                                
+                                {% for relation in relations %}
+                                    {% set node_color = "#6b7280" %}
+                                    {% set icon_class = "fas fa-flag-checkered" %}
+                                    
+                                    {% if relation.is_allied %}
+                                        {% set node_color = "#10b981" %}
+                                        {% set icon_class = "fas fa-handshake" %}
+                                        {% set node_class = "ally" %}
+                                    {% elif relation.is_at_war %}
+                                        {% set node_color = "#ef4444" %}
+                                        {% set icon_class = "fas fa-bomb" %}
+                                        {% set node_class = "enemy" %}
+                                    {% else %}
+                                        {% set node_class = "neutral" %}
+                                    {% endif %}
+                                    
+                                    <!-- Linea di connessione -->
+                                    <div class="nation-relation-line {{ node_class }}" 
+                                         style="--start-x: {{ nation.map_x }}; --start-y: {{ nation.map_y }}; --end-x: {{ relation.nation.map_x }}; --end-y: {{ relation.nation.map_y }}; z-index: 10;"
+                                         data-start-x="{{ nation.map_x }}" data-start-y="{{ nation.map_y }}" 
+                                         data-end-x="{{ relation.nation.map_x }}" data-end-y="{{ relation.nation.map_y }}">
+                                    </div>
+                                    
+                                    <!-- Nazione -->
+                                    <div class="nation-map-node {{ node_class }}" 
+                                         style="left: {{ relation.nation.map_x }}%; top: {{ relation.nation.map_y }}%; background-color: {{ node_color }}; z-index: 20;"
+                                         onclick="location.href='{{ url_for('diplomacy.nation_relations', target_id=relation.nation.id) }}'">
+                                        <i class="{{ icon_class }}"></i>
+                                    </div>
+                                    
+                                    <!-- Etichetta della nazione -->
+                                    <div style="position: absolute; left: {{ relation.nation.map_x }}%; top: calc({{ relation.nation.map_y }}% - 20px); transform: translateX(-50%); background-color: rgba(0,0,0,0.9); padding: 3px 6px; border-radius: 4px; font-size: 11px; white-space: nowrap; z-index: 25; color: white; font-weight: bold; box-shadow: 0 0 8px rgba(0, 0, 0, 0.8);">
+                                        {{ relation.nation.name }} ({{ relation.travel_time }}h)
+                                    </div>
+                                    
+                                    {% if relation.is_neighbor %}
+                                        <div style="position: absolute; left: {{ relation.nation.map_x }}%; top: calc({{ relation.nation.map_y }}% - 32px); transform: translateX(-50%); background-color: #2563eb; padding: 1px 4px; border-radius: 3px; font-size: 9px; z-index: 25; color: white;">
+                                            Neighbor
+                                        </div>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                            <div class="map-legend mt-3">
+                                <span class="legend-item ally"><i class="fas fa-circle"></i> Allies</span>
+                                <span class="legend-item neutral"><i class="fas fa-circle"></i> Neutral</span>
+                                <span class="legend-item enemy"><i class="fas fa-circle"></i> Enemies</span>
+                                <span class="legend-item travel"><i class="fas fa-clock"></i> Travel Time (hours)</span>
+                            </div>
+                        </div>
+                        
+                        <div class="row mt-4">
+                            <div class="col-md-4">
+                                <h4 class="text-success mb-3"><i class="fas fa-handshake"></i> Allies</h4>
+                                <div class="allies-list">
+                                    {% set allies_found = false %}
+                                    {% for relation in relations %}
+                                        {% if relation.is_allied %}
+                                            {% set allies_found = true %}
+                                            <div class="card bg-dark border-success mb-2" 
+                                                onclick="location.href='{{ url_for('diplomacy.nation_relations', target_id=relation.nation.id) }}'"
+                                                style="cursor: pointer">
+                                                <div class="card-body p-2">
+                                                    <div class="d-flex justify-content-between align-items-center">
+                                                        <h6 class="mb-0">{{ relation.nation.name }}</h6>
+                                                        <span class="badge bg-success">Ally</span>
+                                                    </div>
+                                                    <div class="d-flex justify-content-between align-items-center mt-1">
+                                                        <small class="text-muted">{{ relation.nation.continent }}</small>
+                                                        <small>
+                                                            {% if relation.is_neighbor %}
+                                                                <span class="badge bg-primary">Neighbor</span>
+                                                            {% endif %}
+                                                            <span class="badge bg-info">{{ relation.travel_time }}h</span>
+                                                        </small>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        {% endif %}
+                                    {% endfor %}
+                                    {% if not allies_found %}
+                                        <p class="text-muted">No current allies</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <h4 class="text-secondary mb-3"><i class="fas fa-balance-scale"></i> Neutral</h4>
+                                <div class="neutral-list">
+                                    {% set neutral_found = false %}
+                                    <div style="max-height: 300px; overflow-y: auto;">
+                                    {% for relation in relations %}
+                                        {% if not relation.is_allied and not relation.is_at_war %}
+                                            {% set neutral_found = true %}
+                                            <div class="card bg-dark border-secondary mb-2" 
+                                                onclick="location.href='{{ url_for('diplomacy.nation_relations', target_id=relation.nation.id) }}'"
+                                                style="cursor: pointer">
+                                                <div class="card-body p-2">
+                                                    <div class="d-flex justify-content-between align-items-center">
+                                                        <h6 class="mb-0">{{ relation.nation.name }}</h6>
+                                                        <span class="badge bg-secondary">Neutral</span>
+                                                    </div>
+                                                    <div class="d-flex justify-content-between align-items-center mt-1">
+                                                        <small class="text-muted">{{ relation.nation.continent }}</small>
+                                                        <small>
+                                                            {% if relation.is_neighbor %}
+                                                                <span class="badge bg-primary">Neighbor</span>
+                                                            {% endif %}
+                                                            {% if relation.has_transit_rights %}
+                                                                <span class="badge bg-success">Transit</span>
+                                                            {% endif %}
+                                                            <span class="badge bg-info">{{ relation.travel_time }}h</span>
+                                                        </small>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        {% endif %}
+                                    {% endfor %}
+                                    </div>
+                                    {% if not neutral_found %}
+                                        <p class="text-muted">No neutral relations</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <h4 class="text-danger mb-3"><i class="fas fa-bomb"></i> Enemies</h4>
+                                <div class="enemies-list">
+                                    {% set enemies_found = false %}
+                                    {% for relation in relations %}
+                                        {% if relation.is_at_war %}
+                                            {% set enemies_found = true %}
+                                            <div class="card bg-dark border-danger mb-2" 
+                                                onclick="location.href='{{ url_for('diplomacy.nation_relations', target_id=relation.nation.id) }}'"
+                                                style="cursor: pointer">
+                                                <div class="card-body p-2">
+                                                    <div class="d-flex justify-content-between align-items-center">
+                                                        <h6 class="mb-0">{{ relation.nation.name }}</h6>
+                                                        <span class="badge bg-danger">Enemy</span>
+                                                    </div>
+                                                    <div class="d-flex justify-content-between align-items-center mt-1">
+                                                        <small class="text-muted">{{ relation.nation.continent }}</small>
+                                                        <small>
+                                                            <span class="badge bg-danger">At War</span>
+                                                            <span class="badge bg-info">{{ relation.travel_time }}h</span>
+                                                        </small>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        {% endif %}
+                                    {% endfor %}
+                                    {% if not enemies_found %}
+                                        <p class="text-muted">No current enemies</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row mt-4">
+                            <div class="col-md-12 text-center">
+                                <div class="btn-group">
+                                    <a href="{{ url_for('diplomacy.alliances_view') }}" class="btn btn-outline-light">
+                                        <i class="fas fa-handshake"></i> Alliances
+                                    </a>
+                                    <a href="{{ url_for('diplomacy.wars_view') }}" class="btn btn-outline-light">
+                                        <i class="fas fa-bomb"></i> Wars
+                                    </a>
+                                    <a href="{{ url_for('diplomacy.transit_rights_view') }}" class="btn btn-outline-light">
+                                        <i class="fas fa-route"></i> Transit Rights
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- JavaScript to calculate line positions -->
+                        <script>
+                            document.addEventListener('DOMContentLoaded', function() {
+                                const relationLines = document.querySelectorAll('.nation-relation-line');
+                                
+                                relationLines.forEach(line => {
+                                    const startX = parseFloat(getComputedStyle(line).getPropertyValue('--start-x'));
+                                    const startY = parseFloat(getComputedStyle(line).getPropertyValue('--start-y'));
+                                    const endX = parseFloat(getComputedStyle(line).getPropertyValue('--end-x'));
+                                    const endY = parseFloat(getComputedStyle(line).getPropertyValue('--end-y'));
+                                    
+                                    // Calculate the distance between the two points
+                                    const dx = endX - startX;
+                                    const dy = endY - startY;
+                                    const distance = Math.sqrt(dx * dx + dy * dy);
+                                    
+                                    // Calculate the angle
+                                    const angle = Math.atan2(dy, dx) * (180 / Math.PI);
+                                    
+                                    // Set line width and rotation
+                                    const lineBefore = line.querySelector('::before') || line;
+                                    line.style.setProperty('--line-width', `${distance}%`);
+                                    line.style.setProperty('--line-angle', `${angle}deg`);
+                                    
+                                    // Apply styles directly to the pseudo-element via its parent
+                                    line.style.setProperty('--line-width', `${distance}%`);
+                                    line.style.setProperty('--line-angle', `${angle}deg`);
+                                    
+                                    // Force the browser to apply styles to the before elements
+                                    const beforeElements = document.querySelectorAll('.nation-relation-line::before');
+                                    beforeElements.forEach(el => {
+                                        if (el.parentElement === line) {
+                                            el.style.width = `${distance}%`;
+                                            el.style.transform = `rotate(${angle}deg)`;
+                                        }
+                                    });
+                                });
+                            });
+                        </script>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-12">
+            <h3 class="mb-3">International Relations</h3>
+            <p class="text-muted mb-4">Manage your diplomatic relations with other nations. Establish alliances, negotiate treaties, and maintain peace - or declare war.</p>
+            
+            <div class="row">
+                {% for relation in relations %}
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card relation-card {{ relation.relation_state|lower }}">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <h5 class="card-title mb-0">{{ relation.nation.name }}</h5>
+                                    <span class="badge bg-{{ 'success' if relation.relation_value >= 0 else 'danger' }}">
+                                        {{ relation.relation_state }}
+                                    </span>
+                                </div>
+                                
+                                <p class="card-text small mb-1">
+                                    Relation: 
+                                    <span class="relation-value {{ 'positive' if relation.relation_value >= 0 else 'negative' }}">
+                                        {{ relation.relation_value if relation.relation_value >= 0 else relation.relation_value }}
+                                    </span>
+                                </p>
+                                
+                                <p class="card-text small mb-1">
+                                    Economic Rank: <strong>#{{ relation.nation.economic_rank }}</strong> 
+                                    Military Rank: <strong>#{{ relation.nation.military_rank }}</strong>
+                                </p>
+                                
+                                <div class="mt-3">
+                                    <a href="{{ url_for('diplomacy.nation_relations', target_id=relation.nation.id) }}" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-handshake"></i> Diplomacy
+                                    </a>
+                                    
+                                    {% if relation.is_at_war %}
+                                        <span class="war-status ms-2">
+                                            <i class="fas fa-bomb"></i> At War
+                                        </span>
+                                    {% endif %}
+                                    
+                                    {% if relation.is_allied %}
+                                        <span class="peace-status ms-2">
+                                            <i class="fas fa-handshake"></i> Allied
+                                        </span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/map_interaction.js') }}"></script>
+<script src="{{ url_for('static', filename='js/svg_map_link.js') }}"></script>
+<script src="{{ url_for('static', filename='js/diplomacy.js') }}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Legacy map interaction for markers (kept for compatibility)
+        const nationMarkers = document.querySelectorAll('.nation-marker');
+        
+        nationMarkers.forEach(marker => {
+            marker.addEventListener('mouseenter', function() {
+                const tooltip = this.nextElementSibling;
+                if (tooltip && tooltip.classList.contains('nation-marker-tooltip')) {
+                    tooltip.style.opacity = '1';
+                }
+            });
+            
+            marker.addEventListener('mouseleave', function() {
+                const tooltip = this.nextElementSibling;
+                if (tooltip && tooltip.classList.contains('nation-marker-tooltip')) {
+                    tooltip.style.opacity = '0';
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

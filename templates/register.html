@@ -1,0 +1,194 @@
+{% extends "layout.html" %}
+
+{% block title %}Register - EcoWorld{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="auth-container">
+        <h1 class="text-center mb-4">Create Your Nation</h1>
+        
+        <form method="post" action="{{ url_for('auth.register') }}" id="registrationForm">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Username</label>
+                        <input type="text" class="form-control" id="username" name="username" required>
+                        <div class="form-text">Choose a unique username that will identify you in the game.</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="email" name="email" required>
+                        <div class="form-text">We'll never share your email with anyone else.</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Password</label>
+                        <input type="password" class="form-control" id="password" name="password" required>
+                        <div class="form-text">Use a strong password with at least 8 characters.</div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="nation_select" class="form-label">Choose Your Nation</label>
+                        <select class="form-select" id="nation_select" name="nation_select">
+                            <optgroup label="Nord America">
+                                {% for nation in predefined_nations %}
+                                    {% if nation.territory == "Nord America" %}
+                                        <option value="{{ nation.id }}">{{ nation.name }}</option>
+                                    {% endif %}
+                                {% endfor %}
+                            </optgroup>
+                            <optgroup label="Sud America">
+                                {% for nation in predefined_nations %}
+                                    {% if nation.territory == "Sud America" %}
+                                        <option value="{{ nation.id }}">{{ nation.name }}</option>
+                                    {% endif %}
+                                {% endfor %}
+                            </optgroup>
+                            <optgroup label="Europa Occidentale">
+                                {% for nation in predefined_nations %}
+                                    {% if nation.territory == "Europa Occidentale" %}
+                                        <option value="{{ nation.id }}">{{ nation.name }}</option>
+                                    {% endif %}
+                                {% endfor %}
+                            </optgroup>
+                            <optgroup label="Europa Orientale">
+                                {% for nation in predefined_nations %}
+                                    {% if nation.territory == "Europa Orientale" %}
+                                        <option value="{{ nation.id }}">{{ nation.name }}</option>
+                                    {% endif %}
+                                {% endfor %}
+                            </optgroup>
+                            <optgroup label="Africa">
+                                {% for nation in predefined_nations %}
+                                    {% if nation.territory == "Africa" %}
+                                        <option value="{{ nation.id }}">{{ nation.name }}</option>
+                                    {% endif %}
+                                {% endfor %}
+                            </optgroup>
+                            <optgroup label="Medio Oriente">
+                                {% for nation in predefined_nations %}
+                                    {% if nation.territory == "Medio Oriente" %}
+                                        <option value="{{ nation.id }}">{{ nation.name }}</option>
+                                    {% endif %}
+                                {% endfor %}
+                            </optgroup>
+                            <optgroup label="Asia">
+                                {% for nation in predefined_nations %}
+                                    {% if nation.territory == "Asia" %}
+                                        <option value="{{ nation.id }}">{{ nation.name }}</option>
+                                    {% endif %}
+                                {% endfor %}
+                            </optgroup>
+                            <optgroup label="Oceania">
+                                {% for nation in predefined_nations %}
+                                    {% if nation.territory == "Oceania" %}
+                                        <option value="{{ nation.id }}">{{ nation.name }}</option>
+                                    {% endif %}
+                                {% endfor %}
+                            </optgroup>
+                            <optgroup label="Regione Extra">
+                                {% for nation in predefined_nations %}
+                                    {% if nation.territory == "Regione Extra" %}
+                                        <option value="{{ nation.id }}">{{ nation.name }}</option>
+                                    {% endif %}
+                                {% endfor %}
+                            </optgroup>
+                            <optgroup label="Altro">
+                                <option value="custom">Nazione Personalizzata</option>
+                            </optgroup>
+                        </select>
+                        <div class="form-text">Seleziona una nazione esistente o crea la tua.</div>
+                    </div>
+                    
+                    <div id="customNationField" class="mb-3" style="display: none;">
+                        <label for="custom_nation_name" class="form-label">Nome della Nazione Personalizzata</label>
+                        <input type="text" class="form-control" id="custom_nation_name" name="custom_nation_name">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div id="nationPreview" class="card">
+                            <div class="card-body text-center">
+                                <h5 class="card-title" id="previewName">Nazione selezionata</h5>
+                                <p class="card-text" id="previewTerritory">Territorio: <span id="previewTerritoryValue">-</span></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="d-grid mt-4">
+                <button type="submit" class="btn btn-primary btn-lg">Create Nation</button>
+            </div>
+        </form>
+        
+        <div class="text-center mt-3">
+            <p>Already have an account? <a href="{{ url_for('auth.login') }}">Login here</a></p>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const nationSelect = document.getElementById('nation_select');
+        const customNationField = document.getElementById('customNationField');
+        const previewName = document.getElementById('previewName');
+        const previewTerritoryValue = document.getElementById('previewTerritoryValue');
+        
+        // Load nation data
+        const nations = [
+            {% for nation in predefined_nations %}
+                { 
+                    id: "{{ nation.id }}", 
+                    name: "{{ nation.name }}", 
+                    territory: "{{ nation.territory }}"
+                },
+            {% endfor %}
+            { id: "custom", name: "Nazione Personalizzata", territory: "Personalizzato" }
+        ];
+        
+        // Function to update preview
+        function updatePreview() {
+            const selectedOption = nationSelect.value;
+            const nation = nations.find(n => n.id === selectedOption);
+            
+            if (nation) {
+                previewName.textContent = nation.name;
+                previewTerritoryValue.textContent = nation.territory;
+                
+                // Show/hide custom nation field
+                if (selectedOption === 'custom') {
+                    customNationField.style.display = 'block';
+                    document.getElementById('custom_nation_name').setAttribute('required', 'required');
+                } else {
+                    customNationField.style.display = 'none';
+                    document.getElementById('custom_nation_name').removeAttribute('required');
+                }
+            }
+        }
+        
+        // Update preview when selection changes
+        nationSelect.addEventListener('change', updatePreview);
+        
+        // Update on initial load
+        updatePreview();
+        
+        // Form validation
+        document.getElementById('registrationForm').addEventListener('submit', function(e) {
+            if (nationSelect.value === 'custom' && document.getElementById('custom_nation_name').value.trim() === '') {
+                e.preventDefault();
+                alert('Please enter a name for your custom nation');
+            }
+        });
+        
+        // Update name when typing in custom field
+        document.getElementById('custom_nation_name').addEventListener('input', function() {
+            if (nationSelect.value === 'custom') {
+                previewName.textContent = this.value || "Nazione Personalizzata";
+            }
+        });
+    });
+</script>
+{% endblock %}

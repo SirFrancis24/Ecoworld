@@ -1,0 +1,313 @@
+{% extends "layout.html" %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/diplomacy.css') }}">
+{% endblock %}
+
+{% block title %}Diplomacy with {{ target_nation.name }} - EcoWorld{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="mb-0">Diplomacy with {{ target_nation.name }}</h1>
+        <a href="{{ url_for('diplomacy.diplomacy_view') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Diplomacy
+        </a>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card relation-details">
+                <div class="relation-header">
+                    <h3>Diplomatic Status</h3>
+                    <span class="relation-status bg-{{ 'success' if relation.relation_value >= 0 else 'danger' }}">
+                        {{ relation.relation_state }}
+                    </span>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5>Relation Details</h5>
+                        <p class="mb-1">
+                            <strong>Diplomatic Influence:</strong> 
+                            <span class="relation-value {{ 'positive' if relation.relation_value >= 0 else 'negative' }}">
+                                {{ relation.relation_value }} / 100
+                            </span>
+                        </p>
+                        <div class="progress mt-2 mb-3" style="height: 25px;">
+                            {% set percent = (relation.relation_value + 100) / 2 %}
+                            {% if relation.relation_value >= 0 %}
+                                <div class="progress-bar bg-success" role="progressbar" 
+                                     style="width: {{ percent }}%;" 
+                                     aria-valuenow="{{ relation.relation_value }}" 
+                                     aria-valuemin="-100" aria-valuemax="100">
+                                    {{ relation.relation_value }}
+                                </div>
+                            {% else %}
+                                <div class="progress-bar bg-danger" role="progressbar" 
+                                     style="width: {{ percent }}%;" 
+                                     aria-valuenow="{{ relation.relation_value }}" 
+                                     aria-valuemin="-100" aria-valuemax="100">
+                                    {{ relation.relation_value }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <p class="mb-1">
+                            <strong>Alliance:</strong> {{ "Yes" if relation.is_allied else "No" }}
+                        </p>
+                        <p class="mb-1">
+                            <strong>At War:</strong> {{ "Yes" if relation.is_at_war else "No" }}
+                        </p>
+                        <p class="mb-1">
+                            <strong>Continent:</strong> {{ target_nation.continent }}
+                        </p>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <h5>Nation Information</h5>
+                        <p class="mb-1">
+                            <strong>Name:</strong> {{ target_nation.name }}
+                        </p>
+                        <p class="mb-1">
+                            <strong>Economic Rank:</strong> #{{ target_nation.economic_rank }}
+                        </p>
+                        <p class="mb-1">
+                            <strong>Military Rank:</strong> #{{ target_nation.military_rank }}
+                        </p>
+                        <p class="mb-1">
+                            <strong>Overall Rank:</strong> #{{ target_nation.overall_rank }}
+                        </p>
+                    </div>
+                </div>
+                
+                <hr>
+                
+                <div class="relation-modifiers">
+                    <h5>Current Relation Modifiers</h5>
+                    {% if relation.modifiers %}
+                        {% for modifier in relation.modifiers %}
+                            <div class="modifier-item">
+                                <div>{{ modifier.source }}</div>
+                                <div class="modifier-value {{ 'positive' if modifier.value >= 0 else 'negative' }}">
+                                    {{ modifier.value if modifier.value > 0 else modifier.value }}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted">No active relation modifiers.</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            {% if active_war %}
+                <div class="card bg-danger-subtle mt-4">
+                    <div class="card-body">
+                        <h4 class="card-title text-danger">
+                            <i class="fas fa-bomb"></i> War Status
+                        </h4>
+                        <p class="card-text">
+                            You are currently at war with {{ target_nation.name }}.
+                            War started on {{ active_war.start_date.strftime('%Y-%m-%d') }}.
+                        </p>
+                        
+                        {% if active_war.peace_proposed %}
+                            <div class="alert alert-info">
+                                <i class="fas fa-dove"></i> Peace has been proposed for this war.
+                                
+                                {% if active_war.aggressor_id == nation.id %}
+                                    <p>You have proposed peace to {{ target_nation.name }}. Waiting for their response.</p>
+                                {% else %}
+                                    <p>{{ target_nation.name }} has proposed peace. You can accept or reject the proposal.</p>
+                                    
+                                    <div class="mt-3">
+                                        <form action="{{ url_for('diplomacy.accept_peace', war_id=active_war.id) }}" method="post" class="d-inline">
+                                            <button type="submit" class="btn btn-success">
+                                                <i class="fas fa-handshake"></i> Accept Peace
+                                            </button>
+                                        </form>
+                                        
+                                        <form action="{{ url_for('diplomacy.reject_peace', war_id=active_war.id) }}" method="post" class="d-inline">
+                                            <button type="submit" class="btn btn-danger">
+                                                <i class="fas fa-times"></i> Reject Peace
+                                            </button>
+                                        </form>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        {% else %}
+                            <form action="{{ url_for('diplomacy.propose_peace', war_id=active_war.id) }}" method="post" class="mt-3">
+                                <button type="submit" class="btn btn-outline-light">
+                                    <i class="fas fa-dove"></i> Propose Peace
+                                </button>
+                            </form>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endif %}
+            
+            {% if alliance %}
+                <div class="card bg-success-subtle mt-4">
+                    <div class="card-body">
+                        <h4 class="card-title text-success">
+                            <i class="fas fa-handshake"></i> Alliance Status
+                        </h4>
+                        <p class="card-text">
+                            You are currently allied with {{ target_nation.name }}.
+                            Alliance formed on {{ alliance.formed_date.strftime('%Y-%m-%d') }}.
+                        </p>
+                        
+                        <form action="#" method="post" class="mt-3">
+                            <input type="hidden" name="action_id" value="6">
+                            <button type="submit" class="btn btn-outline-danger">
+                                <i class="fas fa-ban"></i> Cancel Alliance
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            {% endif %}
+            
+            {% if past_wars %}
+                <div class="card bg-dark mt-4">
+                    <div class="card-header bg-dark bg-gradient">
+                        <h4 class="mb-0">War History</h4>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-group list-group-flush bg-dark">
+                            {% for war in past_wars %}
+                                <li class="list-group-item bg-dark text-white border-bottom border-secondary">
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <strong>{{ war.start_date.strftime('%Y-%m-%d') }} to {{ war.end_date.strftime('%Y-%m-%d') }}</strong>
+                                            {% if war.aggressor_id == nation.id %}
+                                                <span class="badge bg-danger ms-2">Aggressor</span>
+                                            {% else %}
+                                                <span class="badge bg-warning ms-2">Defender</span>
+                                            {% endif %}
+                                        </div>
+                                        <div>
+                                            {% if war.aggressor_victory != None %}
+                                                {% if (war.aggressor_id == nation.id and war.aggressor_victory) or (war.defender_id == nation.id and not war.aggressor_victory) %}
+                                                    <span class="badge bg-success">Victory</span>
+                                                {% else %}
+                                                    <span class="badge bg-danger">Defeat</span>
+                                                {% endif %}
+                                            {% else %}
+                                                <span class="badge bg-secondary">Stalemate</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card bg-dark">
+                <div class="card-header bg-dark bg-gradient">
+                    <h4 class="mb-0">Diplomatic Actions</h4>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted small">Available diplomatic actions depend on your current relations status with {{ target_nation.name }}.</p>
+                    
+                    {% if available_actions.available_actions %}
+                        <form action="{{ url_for('diplomacy.diplomatic_action') }}" method="post">
+                            <input type="hidden" name="target_id" value="{{ target_nation.id }}">
+                            
+                            <div class="form-group mb-4">
+                                <label for="action_select" class="form-label">Select Action</label>
+                                <select class="form-select" id="action_select" name="action_id" required>
+                                    <option value="" selected disabled>-- Select an action --</option>
+                                    {% for action in available_actions.available_actions %}
+                                        <option value="{{ action.id }}">{{ action.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="fas fa-handshake"></i> Perform Action
+                            </button>
+                        </form>
+                    {% else %}
+                        <p class="text-center text-muted">
+                            No diplomatic actions are currently available.
+                        </p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="card bg-dark mt-4">
+                <div class="card-body">
+                    <h4 class="card-title">Transit Rights</h4>
+                    <p class="card-text small">Transit rights allow military units to pass through foreign territory more quickly.</p>
+                    
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="me-2 text-nowrap">Status:</div>
+                        {% if relation.is_neighbor %}
+                            <span class="badge bg-success">Neighboring Nation</span>
+                            <span class="ms-2 small text-muted">(Transit rights not needed)</span>
+                        {% elif relation.has_transit_rights %}
+                            <span class="badge bg-success">Transit Rights Granted</span>
+                        {% else %}
+                            <span class="badge bg-danger">No Transit Rights</span>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="d-flex align-items-center mb-1">
+                            <i class="fas fa-map-marker-alt me-2"></i>
+                            <span>Continent: <strong>{{ target_nation.continent }}</strong></span>
+                        </div>
+                        
+                        <div class="d-flex align-items-center mb-1">
+                            <i class="fas fa-map me-2"></i>
+                            <span>Status: <strong>{% if relation.is_neighbor %}Neighboring Nation{% else %}Non-Neighboring Nation{% endif %}</strong></span>
+                        </div>
+                        
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-clock me-2"></i>
+                            <span>Travel Time: <strong>{{ relation.travel_time }} hours</strong></span>
+                            {% if relation.has_transit_rights and not relation.is_neighbor %}
+                                <span class="badge bg-info ms-2">50% faster with transit rights</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    {% if not relation.is_neighbor and not relation.has_transit_rights and not relation.is_at_war %}
+                        <form action="{{ url_for('diplomacy.request_transit_rights', target_id=target_nation.id) }}" method="post">
+                            <button type="submit" class="btn btn-sm btn-outline-info">
+                                <i class="fas fa-route"></i> Request Transit Rights
+                            </button>
+                        </form>
+                    {% elif not relation.is_neighbor and relation.has_transit_rights and not relation.is_allied %}
+                        <form action="{{ url_for('diplomacy.revoke_transit_rights', target_id=target_nation.id) }}" method="post">
+                            <button type="submit" class="btn btn-sm btn-outline-warning">
+                                <i class="fas fa-ban"></i> Revoke Transit Rights
+                            </button>
+                        </form>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="card bg-dark mt-4">
+                <div class="card-body">
+                    <h4 class="card-title">Non-Aggression Pact</h4>
+                    <p class="card-text small">A non-aggression pact is a formal agreement not to attack each other for a specified period.</p>
+                    
+                    <div class="form-check form-switch mb-3">
+                        <input class="form-check-input" type="checkbox" id="pactSwitch" disabled>
+                        <label class="form-check-label" for="pactSwitch">Non-Aggression Pact</label>
+                        <span class="badge bg-danger ms-2">Not Active</span>
+                    </div>
+                    
+                    <button type="button" class="btn btn-sm btn-outline-info">
+                        <i class="fas fa-file-signature"></i> Propose Pact
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

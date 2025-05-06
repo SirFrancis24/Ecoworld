@@ -1,0 +1,719 @@
+{% extends "layout.html" %}
+
+{% block title %}Military - EcoWorld{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1 class="mb-0">Military Command</h1>
+        <div class="resources-badge">
+            <span id="available-raw-materials" class="badge bg-secondary me-2"><i class="fas fa-gem"></i> {{ "{:,.0f}".format(resources.raw_materials) }}</span>
+            <span id="available-energy" class="badge bg-warning me-2"><i class="fas fa-bolt"></i> {{ "{:,.0f}".format(resources.energy) }}</span>
+            <span id="available-currency" class="badge bg-success"><i class="fas fa-coins"></i> {{ "{:,.0f}".format(resources.currency) }}</span>
+        </div>
+    </div>
+
+    <!-- Military Power Stats -->
+    <div class="row mb-3">
+        <div class="col-md-4">
+            <div class="card h-100 border-danger">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Offensive Power</h5>
+                    <h3 id="offensive-power" class="display-6 fw-bold">{{ "{:,.0f}".format(military.offensive_power) }}</h3>
+                    <p class="card-text text-muted small">Used for attacks and invasions</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 border-success">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Defensive Power</h5>
+                    <h3 id="defensive-power" class="display-6 fw-bold">{{ "{:,.0f}".format(military.defensive_power) }}</h3>
+                    <p class="card-text text-muted small">Protects against enemy attacks</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 border-info">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Espionage Power</h5>
+                    <h3 id="espionage-power" class="display-6 fw-bold">{{ "{:,.0f}".format(military.espionage_power) }}</h3>
+                    <p class="card-text text-muted small">Determines spy mission success rates</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Row -->
+    <div class="row">
+        <!-- Left Column - Military Units & Build -->
+        <div class="col-lg-8 mb-3">
+            <div class="card">
+                <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Military Assets</h5>
+                    <button class="btn btn-sm btn-outline-light" type="button" data-bs-toggle="collapse" data-bs-target="#militaryUnitsCollapse">
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                </div>
+                <div class="collapse show" id="militaryUnitsCollapse">
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover mb-0">
+                                <thead>
+                                    <tr class="table-secondary">
+                                        <th colspan="6">Combat Units</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td style="width: 20%">
+                                            <div class="d-flex align-items-center">
+                                                <i class="fas fa-user-soldier me-2"></i>
+                                                <strong>Infantry</strong>
+                                            </div>
+                                        </td>
+                                        <td style="width: 15%">
+                                            <span id="available-infantry" class="badge bg-secondary" style="font-size: 0.85rem; min-width: 60px; text-align: center">{{ "{:,}".format(military.infantry) }}</span>
+                                            <small class="text-muted ms-1">/ {{ "{:,}".format(military_limits['infantry']) }}</small>
+                                        </td>
+                                        <td style="width: 20%">
+                                            <div class="d-flex align-items-center">
+                                                <i class="fas fa-tank me-2"></i>
+                                                <strong>Tanks</strong>
+                                            </div>
+                                        </td>
+                                        <td style="width: 15%">
+                                            <span id="available-tanks" class="badge bg-secondary" style="font-size: 0.85rem; min-width: 60px; text-align: center">{{ "{:,}".format(military.tanks) }}</span>
+                                            <small class="text-muted ms-1">/ {{ "{:,}".format(military_limits['tanks']) }}</small>
+                                        </td>
+                                        <td style="width: 20%">
+                                            <div class="d-flex align-items-center">
+                                                <i class="fas fa-fighter-jet me-2"></i>
+                                                <strong>Aircraft</strong>
+                                            </div>
+                                        </td>
+                                        <td style="width: 15%">
+                                            <span id="available-aircraft" class="badge bg-secondary" style="font-size: 0.85rem; min-width: 60px; text-align: center">{{ "{:,}".format(military.aircraft) }}</span>
+                                            <small class="text-muted ms-1">/ {{ "{:,}".format(military_limits['aircraft']) }}</small>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <i class="fas fa-ship me-2"></i>
+                                                <strong>Navy</strong>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span id="available-navy" class="badge bg-secondary" style="font-size: 0.85rem; min-width: 60px; text-align: center">{{ "{:,}".format(military.navy) }}</span>
+                                            <small class="text-muted ms-1">/ {{ "{:,}".format(military_limits['navy']) }}</small>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <i class="fas fa-rocket me-2"></i>
+                                                <strong>Missiles</strong>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span id="available-missiles" class="badge bg-secondary" style="font-size: 0.85rem; min-width: 60px; text-align: center">{{ "{:,}".format(military.missiles) }}</span>
+                                            <small class="text-muted ms-1">/ {{ "{:,}".format(military_limits['missiles']) }}</small>
+                                        </td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr class="table-secondary">
+                                        <th colspan="6">Defensive Structures</th>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <i class="fas fa-shield-alt me-2"></i>
+                                                <strong>Bunkers</strong>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-success" style="font-size: 0.85rem; min-width: 60px; text-align: center">{{ "{:,}".format(military.bunkers) }}</span>
+                                            <small class="text-muted ms-1">/ {{ "{:,}".format(military_limits['bunkers']) }}</small>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <i class="fas fa-crosshairs me-2"></i>
+                                                <strong>Anti-Air</strong>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-success" style="font-size: 0.85rem; min-width: 60px; text-align: center">{{ "{:,}".format(military.anti_air) }}</span>
+                                            <small class="text-muted ms-1">/ {{ "{:,}".format(military_limits['anti_air']) }}</small>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <i class="fas fa-water me-2"></i>
+                                                <strong>Coastal</strong>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-success" style="font-size: 0.85rem; min-width: 60px; text-align: center">{{ "{:,}".format(military.coastal_defenses) }}</span>
+                                            <small class="text-muted ms-1">/ {{ "{:,}".format(military_limits['coastal_defenses']) }}</small>
+                                        </td>
+                                    </tr>
+                                    <tr class="table-secondary">
+                                        <th colspan="6">Intelligence Assets</th>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <i class="fas fa-user-secret me-2"></i>
+                                                <strong>Spies</strong>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span id="available-spies" class="badge bg-info" style="font-size: 0.85rem; min-width: 60px; text-align: center">{{ "{:,}".format(military.spies) }}</span>
+                                            <small class="text-muted ms-1">/ {{ "{:,}".format(military_limits['spies']) }}</small>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <i class="fas fa-user-shield me-2"></i>
+                                                <strong>Counter-Intel</strong>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-info" style="font-size: 0.85rem; min-width: 60px; text-align: center">{{ "{:,}".format(military.counter_intelligence) }}</span>
+                                            <small class="text-muted ms-1">/ {{ "{:,}".format(military_limits['counter_intelligence']) }}</small>
+                                        </td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Military Power Chart (collapsible and smaller) -->
+            <div class="card mt-3">
+                <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Military Balance</h5>
+                    <button class="btn btn-sm btn-outline-light" type="button" data-bs-toggle="collapse" data-bs-target="#militaryChartCollapse">
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                </div>
+                <div class="collapse" id="militaryChartCollapse">
+                    <div class="card-body">
+                        <div style="height: 250px">
+                            <canvas id="military-power-chart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Right Column - Build Military -->
+        <div class="col-lg-4 mb-3">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Build Military Units</h5>
+                </div>
+                <div class="card-body">
+                    <form id="build-form" action="{{ url_for('military.build_military') }}" method="post">
+                        <div class="mb-3">
+                            <label for="unit-type" class="form-label">Unit Type</label>
+                            <select class="form-select form-select-sm" id="unit-type" name="unit_type" required>
+                                <optgroup label="Combat Units">
+                                    <option value="infantry">Infantry</option>
+                                    <option value="tanks">Tanks</option>
+                                    <option value="aircraft">Aircraft</option>
+                                    <option value="navy">Navy</option>
+                                    <option value="missiles">Missiles</option>
+                                </optgroup>
+                                <optgroup label="Defensive Structures">
+                                    <option value="bunkers">Bunkers</option>
+                                    <option value="anti_air">Anti-Air Defense</option>
+                                    <option value="coastal_defenses">Coastal Defense</option>
+                                </optgroup>
+                                <optgroup label="Intelligence">
+                                    <option value="spies">Spies</option>
+                                    <option value="counter_intelligence">Counter-Intelligence</option>
+                                </optgroup>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="build-quantity" class="form-label">Quantity</label>
+                            <input type="number" class="form-control form-control-sm" id="build-quantity" name="quantity" min="1" value="1" required>
+                        </div>
+                        
+                        <!-- Compact content with fixed width and overflow handling -->
+                        <div id="cost-details" style="background-color: rgba(52, 58, 64, 0.8); color: white; padding: 12px; border-radius: 8px; margin-bottom: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); border: 1px solid rgba(90, 90, 90, 0.2); max-width: 100%; box-sizing: border-box;">
+                            <div style="margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 4px;">
+                                <span style="font-weight: bold; font-size: 13px;">Required Resources</span>
+                            </div>
+                            <table style="width: 100%; border-collapse: collapse;">
+                                <tr>
+                                    <td style="padding: 2px 4px; width: 33%;">
+                                        <div style="display: flex; align-items: center;">
+                                            <span style="min-width: 16px; height: 16px; background: rgba(135, 206, 250, 0.2); border-radius: 3px; display: flex; align-items: center; justify-content: center; margin-right: 4px; flex-shrink: 0;">
+                                                <span style="font-size: 9px; color: skyblue;">&#9672;</span>
+                                            </span>
+                                            <span style="font-weight: bold; color: skyblue; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Raw Materials</span>
+                                        </div>
+                                        <div style="font-size: 14px; margin-left: 20px; color: white;" id="raw-materials-cost">10</div>
+                                    </td>
+                                    <td style="padding: 2px 4px; width: 33%;">
+                                        <div style="display: flex; align-items: center;">
+                                            <span style="min-width: 16px; height: 16px; background: rgba(255, 215, 0, 0.2); border-radius: 3px; display: flex; align-items: center; justify-content: center; margin-right: 4px; flex-shrink: 0;">
+                                                <span style="font-size: 9px; color: gold;">&#9889;</span>
+                                            </span>
+                                            <span style="font-weight: bold; color: gold; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Energy</span>
+                                        </div>
+                                        <div style="font-size: 14px; margin-left: 20px; color: white;" id="energy-cost">5</div>
+                                    </td>
+                                    <td style="padding: 2px 4px; width: 33%;">
+                                        <div style="display: flex; align-items: center;">
+                                            <span style="min-width: 16px; height: 16px; background: rgba(144, 238, 144, 0.2); border-radius: 3px; display: flex; align-items: center; justify-content: center; margin-right: 4px; flex-shrink: 0;">
+                                                <span style="font-size: 9px; color: lightgreen;">&#164;</span>
+                                            </span>
+                                            <span style="font-weight: bold; color: lightgreen; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Currency</span>
+                                        </div>
+                                        <div style="font-size: 14px; margin-left: 20px; color: white;" id="currency-cost">100</div>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary btn-sm w-100">Build Units</button>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Intelligence Operations (moved from bottom) -->
+            <div class="card mt-3">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">Intelligence</h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info py-2">
+                        <h6><i class="fas fa-info-circle"></i> Espionage Operations</h6>
+                        <p>Espionage operations (deploying spies, gathering intelligence, and counter-intelligence) have been moved to the <a href="{{ url_for('espionage.espionage_view') }}" class="alert-link">Espionage</a> section for better organization.</p>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('espionage.espionage_view') }}" class="btn btn-info">
+                            <i class="fas fa-user-secret me-1"></i> Go to Espionage Operations
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Active Wars Section -->
+    <div class="card mt-3">
+        <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0"><i class="fas fa-fire-alt"></i> Active Wars</h5>
+            {% set total_wars = active_wars_as_aggressor|length + active_wars_as_defender|length %}
+            <span class="badge {% if total_wars > 0 %}bg-danger{% else %}bg-secondary{% endif %}">{{ total_wars }}</span>
+        </div>
+        <div class="card-body p-3">
+            {% if active_wars_as_aggressor|length > 0 %}
+                <div class="mb-4">
+                    <h6 class="border-bottom border-danger pb-2 text-danger"><i class="fas fa-flag"></i> Wars You Initiated</h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Against</th>
+                                    <th>Duration</th>
+                                    <th>Your Losses</th>
+                                    <th>Enemy Losses</th>
+                                    <th>Population Lost</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for war in active_wars_as_aggressor %}
+                                    <tr>
+                                        <td><strong>{{ war.defender.name }}</strong></td>
+                                        <td>{{ (datetime.utcnow() - war.start_date).days }} days</td>
+                                        <td>{{ "{:,}".format(war.aggressor_casualties) }}</td>
+                                        <td>{{ "{:,}".format(war.defender_casualties) }}</td>
+                                        <td>
+                                            <span class="text-danger">-{{ "{:,}".format(war.aggressor_population_lost) }}</span> / 
+                                            <span class="text-success">-{{ "{:,}".format(war.defender_population_lost) }}</span>
+                                        </td>
+                                        <td>
+                                            <div class="dropdown">
+                                                <button class="btn btn-sm btn-danger dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                                    Attack
+                                                </button>
+                                                <ul class="dropdown-menu">
+                                                    <li>
+                                                        <form action="{{ url_for('military.attack') }}" method="post" class="dropdown-item">
+                                                            <input type="hidden" name="war_id" value="{{ war.id }}">
+                                                            <input type="hidden" name="attack_type" value="infantry">
+                                                            <button type="submit" class="btn btn-sm btn-link text-danger p-0">Infantry Attack</button>
+                                                        </form>
+                                                    </li>
+                                                    {% if military.tanks > 0 %}
+                                                    <li>
+                                                        <form action="{{ url_for('military.attack') }}" method="post" class="dropdown-item">
+                                                            <input type="hidden" name="war_id" value="{{ war.id }}">
+                                                            <input type="hidden" name="attack_type" value="tanks">
+                                                            <button type="submit" class="btn btn-sm btn-link text-danger p-0">Tank Attack</button>
+                                                        </form>
+                                                    </li>
+                                                    {% endif %}
+                                                    {% if military.aircraft > 0 %}
+                                                    <li>
+                                                        <form action="{{ url_for('military.attack') }}" method="post" class="dropdown-item">
+                                                            <input type="hidden" name="war_id" value="{{ war.id }}">
+                                                            <input type="hidden" name="attack_type" value="aircraft">
+                                                            <button type="submit" class="btn btn-sm btn-link text-danger p-0">Air Strike</button>
+                                                        </form>
+                                                    </li>
+                                                    {% endif %}
+                                                    {% if military.navy > 0 %}
+                                                    <li>
+                                                        <form action="{{ url_for('military.attack') }}" method="post" class="dropdown-item">
+                                                            <input type="hidden" name="war_id" value="{{ war.id }}">
+                                                            <input type="hidden" name="attack_type" value="navy">
+                                                            <button type="submit" class="btn btn-sm btn-link text-danger p-0">Naval Attack</button>
+                                                        </form>
+                                                    </li>
+                                                    {% endif %}
+                                                    {% if military.missiles > 0 %}
+                                                    <li>
+                                                        <form action="{{ url_for('military.attack') }}" method="post" class="dropdown-item">
+                                                            <input type="hidden" name="war_id" value="{{ war.id }}">
+                                                            <input type="hidden" name="attack_type" value="missiles">
+                                                            <button type="submit" class="btn btn-sm btn-link text-danger p-0">Missile Strike</button>
+                                                        </form>
+                                                    </li>
+                                                    {% endif %}
+                                                </ul>
+                                            </div>
+                                            {% if war.battle_reports|length > 0 %}
+                                                <button type="button" class="btn btn-sm btn-outline-secondary mt-1" 
+                                                        data-bs-toggle="modal" 
+                                                        data-bs-target="#warReportsModal{{ war.id }}">
+                                                    Reports
+                                                </button>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+
+                                    <!-- War Reports Modal -->
+                                    <div class="modal fade" id="warReportsModal{{ war.id }}" tabindex="-1" aria-hidden="true">
+                                        <div class="modal-dialog modal-lg">
+                                            <div class="modal-content">
+                                                <div class="modal-header bg-dark text-white">
+                                                    <h5 class="modal-title">War Reports: {{ nation.name }} vs {{ war.defender.name }}</h5>
+                                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <div class="row mb-3">
+                                                        <div class="col-md-6">
+                                                            <div class="card border-danger">
+                                                                <div class="card-header bg-danger text-white py-1">
+                                                                    <h6 class="mb-0">Your Losses</h6>
+                                                                </div>
+                                                                <div class="card-body p-2">
+                                                                    <ul class="list-group list-group-flush">
+                                                                        <li class="list-group-item d-flex justify-content-between">
+                                                                            <span>Military Units:</span>
+                                                                            <strong>{{ "{:,}".format(war.aggressor_casualties) }}</strong>
+                                                                        </li>
+                                                                        <li class="list-group-item d-flex justify-content-between">
+                                                                            <span>Population:</span>
+                                                                            <strong>{{ "{:,}".format(war.aggressor_population_lost) }}</strong>
+                                                                        </li>
+                                                                    </ul>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <div class="card border-success">
+                                                                <div class="card-header bg-success text-white py-1">
+                                                                    <h6 class="mb-0">Enemy Losses</h6>
+                                                                </div>
+                                                                <div class="card-body p-2">
+                                                                    <ul class="list-group list-group-flush">
+                                                                        <li class="list-group-item d-flex justify-content-between">
+                                                                            <span>Military Units:</span>
+                                                                            <strong>{{ "{:,}".format(war.defender_casualties) }}</strong>
+                                                                        </li>
+                                                                        <li class="list-group-item d-flex justify-content-between">
+                                                                            <span>Population:</span>
+                                                                            <strong>{{ "{:,}".format(war.defender_population_lost) }}</strong>
+                                                                        </li>
+                                                                        <li class="list-group-item d-flex justify-content-between">
+                                                                            <span>Resources Plundered:</span>
+                                                                            <strong>{{ "{:,}".format(war.resources_plundered|int) }}</strong>
+                                                                        </li>
+                                                                    </ul>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <!-- Battle Reports -->
+                                                    <h6 class="fw-bold">Battle History</h6>
+                                                    <div class="list-group">
+                                                        {% for report in war.battle_reports|sort(attribute='battle_date', reverse=True) %}
+                                                            <a href="{{ url_for('military.view_battle_report', report_id=report.id) }}" class="list-group-item list-group-item-action">
+                                                                <div class="d-flex justify-content-between">
+                                                                    <h6 class="mb-1">
+                                                                        {{ report.attack_type.capitalize() }} Attack 
+                                                                        <span class="badge {% if report.is_attacker_victory %}bg-success{% else %}bg-danger{% endif %}">
+                                                                            {% if report.is_attacker_victory %}Success{% else %}Failed{% endif %}
+                                                                        </span>
+                                                                    </h6>
+                                                                    <small>{{ report.battle_date.strftime('%Y-%m-%d %H:%M') }}</small>
+                                                                </div>
+                                                                <p class="mb-1 text-truncate">
+                                                                    Casualties: {{ "{:,}".format(report.attacker_casualties) }} vs {{ "{:,}".format(report.defender_casualties) }}
+                                                                </p>
+                                                            </a>
+                                                        {% else %}
+                                                            <div class="alert alert-warning">No battle reports available yet.</div>
+                                                        {% endfor %}
+                                                    </div>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            {% endif %}
+            
+            {% if active_wars_as_defender|length > 0 %}
+                <div>
+                    <h6 class="border-bottom border-warning pb-2 text-warning"><i class="fas fa-shield-alt"></i> Wars Against You</h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Aggressor</th>
+                                    <th>Duration</th>
+                                    <th>Your Losses</th>
+                                    <th>Enemy Losses</th>
+                                    <th>Population Lost</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for war in active_wars_as_defender %}
+                                    <tr>
+                                        <td><strong>{{ war.aggressor.name }}</strong></td>
+                                        <td>{{ (datetime.utcnow() - war.start_date).days }} days</td>
+                                        <td>{{ "{:,}".format(war.defender_casualties) }}</td>
+                                        <td>{{ "{:,}".format(war.aggressor_casualties) }}</td>
+                                        <td>
+                                            <span class="text-danger">-{{ "{:,}".format(war.defender_population_lost) }}</span> / 
+                                            <span class="text-success">-{{ "{:,}".format(war.aggressor_population_lost) }}</span>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-warning">Defending</span>
+                                            {% if war.battle_reports|length > 0 %}
+                                                <button type="button" class="btn btn-sm btn-outline-secondary d-block mt-1" 
+                                                        data-bs-toggle="modal" 
+                                                        data-bs-target="#defenderWarReportsModal{{ war.id }}">
+                                                    Reports
+                                                </button>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    
+                                    <!-- War Reports Modal (as defender) -->
+                                    <div class="modal fade" id="defenderWarReportsModal{{ war.id }}" tabindex="-1" aria-hidden="true">
+                                        <div class="modal-dialog modal-lg">
+                                            <div class="modal-content">
+                                                <div class="modal-header bg-dark text-white">
+                                                    <h5 class="modal-title">War Reports: {{ war.aggressor.name }} vs {{ nation.name }}</h5>
+                                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <div class="row mb-3">
+                                                        <div class="col-md-6">
+                                                            <div class="card border-danger">
+                                                                <div class="card-header bg-danger text-white py-1">
+                                                                    <h6 class="mb-0">Your Losses</h6>
+                                                                </div>
+                                                                <div class="card-body p-2">
+                                                                    <ul class="list-group list-group-flush">
+                                                                        <li class="list-group-item d-flex justify-content-between">
+                                                                            <span>Military Units:</span>
+                                                                            <strong>{{ "{:,}".format(war.defender_casualties) }}</strong>
+                                                                        </li>
+                                                                        <li class="list-group-item d-flex justify-content-between">
+                                                                            <span>Population:</span>
+                                                                            <strong>{{ "{:,}".format(war.defender_population_lost) }}</strong>
+                                                                        </li>
+                                                                        <li class="list-group-item d-flex justify-content-between">
+                                                                            <span>Resources Lost:</span>
+                                                                            <strong>{{ "{:,}".format(war.resources_plundered|int) }}</strong>
+                                                                        </li>
+                                                                    </ul>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <div class="card border-success">
+                                                                <div class="card-header bg-success text-white py-1">
+                                                                    <h6 class="mb-0">Enemy Losses</h6>
+                                                                </div>
+                                                                <div class="card-body p-2">
+                                                                    <ul class="list-group list-group-flush">
+                                                                        <li class="list-group-item d-flex justify-content-between">
+                                                                            <span>Military Units:</span>
+                                                                            <strong>{{ "{:,}".format(war.aggressor_casualties) }}</strong>
+                                                                        </li>
+                                                                        <li class="list-group-item d-flex justify-content-between">
+                                                                            <span>Population:</span>
+                                                                            <strong>{{ "{:,}".format(war.aggressor_population_lost) }}</strong>
+                                                                        </li>
+                                                                    </ul>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <!-- Battle Reports -->
+                                                    <h6 class="fw-bold">Battle History</h6>
+                                                    <div class="list-group">
+                                                        {% for report in war.battle_reports|sort(attribute='battle_date', reverse=True) %}
+                                                            <a href="{{ url_for('military.view_battle_report', report_id=report.id) }}" class="list-group-item list-group-item-action">
+                                                                <div class="d-flex justify-content-between">
+                                                                    <h6 class="mb-1">
+                                                                        {{ report.attack_type.capitalize() }} Attack 
+                                                                        <span class="badge {% if report.is_attacker_victory %}bg-danger{% else %}bg-success{% endif %}">
+                                                                            {% if report.is_attacker_victory %}Successful Enemy Attack{% else %}Enemy Attack Repelled{% endif %}
+                                                                        </span>
+                                                                    </h6>
+                                                                    <small>{{ report.battle_date.strftime('%Y-%m-%d %H:%M') }}</small>
+                                                                </div>
+                                                                <p class="mb-1 text-truncate">
+                                                                    Casualties: {{ "{:,}".format(report.defender_casualties) }} vs {{ "{:,}".format(report.attacker_casualties) }}
+                                                                </p>
+                                                            </a>
+                                                        {% else %}
+                                                            <div class="alert alert-warning">No battle reports available yet.</div>
+                                                        {% endfor %}
+                                                    </div>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            {% endif %}
+            
+            {% if active_wars_as_aggressor|length == 0 and active_wars_as_defender|length == 0 %}
+                <div class="alert alert-success mb-0">
+                    <i class="fas fa-dove me-2"></i> Your nation is currently at peace.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Military Power Chart
+        var ctx = document.getElementById('military-power-chart').getContext('2d');
+        var chart = new Chart(ctx, {
+            type: 'radar',
+            data: {
+                labels: ['Infantry', 'Tanks', 'Aircraft', 'Navy', 'Missiles', 'Defense', 'Intelligence'],
+                datasets: [{
+                    label: 'Military Capability',
+                    data: [
+                        {{ military.infantry / 100 }}, 
+                        {{ military.tanks / 5 }}, 
+                        {{ military.aircraft }}, 
+                        {{ military.navy * 2 }}, 
+                        {{ military.missiles * 3 }},
+                        {{ (military.bunkers + military.anti_air + military.coastal_defenses) * 2 }},
+                        {{ military.spies * 5 + military.counter_intelligence * 10 }}
+                    ],
+                    backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                    pointBackgroundColor: 'rgba(255, 99, 132, 1)',
+                    pointBorderColor: '#fff',
+                    pointHoverBackgroundColor: '#fff',
+                    pointHoverBorderColor: 'rgba(255, 99, 132, 1)'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    r: {
+                        angleLines: {
+                            display: true
+                        },
+                        suggestedMin: 0,
+                        suggestedMax: 100
+                    }
+                }
+            }
+        });
+        
+        // Add cost calculation functionality
+        const unitTypeSelect = document.getElementById('unit-type');
+        const quantityInput = document.getElementById('build-quantity');
+        const rawMaterialsCostElement = document.getElementById('raw-materials-cost');
+        const energyCostElement = document.getElementById('energy-cost');
+        const currencyCostElement = document.getElementById('currency-cost');
+        
+        // Define unit costs (same as in routes/military.py)
+        const unitCosts = {
+            'infantry': {'raw_materials': 10, 'energy': 5, 'currency': 100},
+            'tanks': {'raw_materials': 100, 'energy': 50, 'currency': 1000},
+            'aircraft': {'raw_materials': 200, 'energy': 150, 'currency': 5000},
+            'navy': {'raw_materials': 500, 'energy': 300, 'currency': 10000},
+            'missiles': {'raw_materials': 300, 'energy': 200, 'currency': 7500},
+            'bunkers': {'raw_materials': 1000, 'energy': 100, 'currency': 5000},
+            'anti_air': {'raw_materials': 500, 'energy': 200, 'currency': 3000},
+            'coastal_defenses': {'raw_materials': 800, 'energy': 200, 'currency': 4000},
+            'spies': {'raw_materials': 0, 'energy': 50, 'currency': 2000},
+            'counter_intelligence': {'raw_materials': 0, 'energy': 100, 'currency': 3000}
+        };
+        
+        function updateCosts() {
+            console.log('Updating costs');
+            const unitType = unitTypeSelect.value;
+            const quantity = parseInt(quantityInput.value) || 1;
+            
+            if (unitCosts[unitType]) {
+                const costs = unitCosts[unitType];
+                rawMaterialsCostElement.textContent = (costs.raw_materials * quantity).toLocaleString();
+                energyCostElement.textContent = (costs.energy * quantity).toLocaleString();
+                currencyCostElement.textContent = (costs.currency * quantity).toLocaleString();
+            }
+        }
+        
+        if (unitTypeSelect && quantityInput) {
+            unitTypeSelect.addEventListener('change', updateCosts);
+            quantityInput.addEventListener('input', updateCosts);
+            
+            // Initial update
+            updateCosts();
+        }
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,505 @@
+/* Diplomacy Styles */
+
+/* Diplomatic Influence Meter */
+.influence-meter {
+    height: 30px;
+    background-color: #1f2937;
+    border-radius: 15px;
+    margin: 20px 0;
+    position: relative;
+    overflow: hidden;
+    border: 1px solid #4b5563;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.influence-fill {
+    height: 100%;
+    background: linear-gradient(to right, #0d6efd, #0ea5e9);
+    border-radius: 15px;
+    transition: width 0.5s ease-out;
+}
+
+.influence-label {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+}
+
+/* Diplomacy Tree Styling */
+.diplomacy-tree {
+    padding: 20px;
+    position: relative;
+}
+
+.nation-node {
+    background-color: #1f2937;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.nation-node:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 15px rgba(0, 0, 0, 0.2);
+}
+
+.nation-node h4, 
+.nation-node h5 {
+    margin-bottom: 10px;
+}
+
+.nation-node .relation-value {
+    margin-bottom: 8px;
+    font-weight: bold;
+}
+
+.nation-node.self {
+    background-color: #3b82f6;
+}
+
+.nation-node.ally {
+    background-color: #10b981;
+}
+
+.nation-node.enemy {
+    background-color: #ef4444;
+}
+
+.nation-node.neutral {
+    background-color: #6b7280;
+}
+
+.transit-status,
+.war-status {
+    margin-top: 10px;
+    font-size: 0.8rem;
+}
+
+/* Geo-spatial Diplomacy Map */
+.diplomacy-map-container {
+    position: relative;
+    width: 100%;
+    background-color: #111827;
+    border-radius: 8px;
+    padding: 20px;
+    overflow: auto; /* Allow scrolling */
+    max-height: 700px; /* Add a max height to ensure it doesn't take too much space */
+}
+
+.diplomacy-map {
+    position: relative;
+    width: 100%;
+    height: 600px;
+    background-color: #0a101d;
+    border-radius: 8px;
+    /* Griglia di base */
+    background-image: 
+        radial-gradient(circle, #1e293b 1px, transparent 1px),
+        /* Confini continentali stilizzati */
+        linear-gradient(45deg, rgba(16, 185, 129, 0.05) 25%, transparent 25%),
+        linear-gradient(-45deg, rgba(59, 130, 246, 0.05) 25%, transparent 25%),
+        linear-gradient(to right, rgba(239, 68, 68, 0.03) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(16, 185, 129, 0.03) 1px, transparent 1px);
+    background-size: 
+        20px 20px, /* Per i punti */
+        160px 160px, /* Per i pattern di continenti */
+        160px 160px,
+        80px 80px, /* Per la griglia più fine */
+        80px 80px;
+    overflow: visible;
+    border: 1px solid #2d3748;
+    /* Making sure we can see everything */
+    min-width: 1000px;
+    min-height: 600px;
+}
+
+.nation-map-node {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    background-color: #334155;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3), 0 0 15px rgba(255, 255, 255, 0.3);
+    z-index: 10;
+    transition: all 0.3s ease;
+    padding: 0;
+    opacity: 1;
+    border: 2px solid rgba(255, 255, 255, 0.8);
+}
+
+.nation-map-node:hover {
+    transform: translate(-50%, -50%) scale(1.3);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+}
+
+.nation-map-node.self {
+    background-color: #3b82f6;
+    border: 3px solid white;
+    width: 40px;
+    height: 40px;
+    z-index: 11;
+}
+
+.nation-map-node.ally {
+    background-color: #10b981;
+    border: 1px solid #34d399;
+}
+
+.nation-map-node.enemy {
+    background-color: #ef4444;
+    border: 1px solid #f87171;
+}
+
+.nation-map-node.neutral {
+    background-color: #6b7280;
+    border: 1px solid #9ca3af;
+}
+
+.nation-icon {
+    font-size: 1.2rem;
+}
+
+.nation-name {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translate(-50%, -130%);
+    white-space: nowrap;
+    background-color: rgba(17, 24, 39, 0.8);
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.nation-map-node:hover .nation-name {
+    opacity: 1;
+}
+
+.travel-time {
+    position: absolute;
+    bottom: -20px;
+    font-size: 0.7rem;
+    background-color: rgba(17, 24, 39, 0.8);
+    padding: 2px 5px;
+    border-radius: 3px;
+}
+
+.neighbor-badge {
+    position: absolute;
+    top: -18px;
+    right: -18px;
+    background-color: #2563eb;
+    color: white;
+    font-size: 0.6rem;
+    padding: 2px 4px;
+    border-radius: 3px;
+    white-space: nowrap;
+}
+
+.nation-relation-line {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    z-index: 5;
+    overflow: visible;
+    pointer-events: none;
+}
+
+/* Create a line using CSS custom properties and pseudo-elements */
+.nation-relation-line::before {
+    content: '';
+    position: absolute;
+    top: calc(var(--start-y) * 1%);
+    left: calc(var(--start-x) * 1%);
+    width: var(--line-width, 1px); /* Set by JavaScript */
+    height: 4px;
+    background-color: #4b5563;
+    transform-origin: 0 0;
+    transform: rotate(var(--line-angle, 45deg)); /* Set by JavaScript */
+    box-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
+}
+
+.nation-relation-line.ally::before {
+    background-color: #10b981;
+    opacity: 0.8;
+    box-shadow: 0 0 10px rgba(16, 185, 129, 0.7);
+}
+
+.nation-relation-line.enemy::before {
+    background-color: #ef4444;
+    opacity: 0.8;
+    box-shadow: 0 0 10px rgba(239, 68, 68, 0.7);
+}
+
+.nation-relation-line.neutral::before {
+    background-color: #6b7280;
+    opacity: 0.7;
+    box-shadow: 0 0 10px rgba(107, 114, 128, 0.6);
+}
+
+.map-legend {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    font-size: 0.8rem;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.legend-item.ally i {
+    color: #10b981;
+}
+
+.legend-item.neutral i {
+    color: #6b7280;
+}
+
+.legend-item.enemy i {
+    color: #ef4444;
+}
+
+.legend-item.travel i {
+    color: #3b82f6;
+}
+
+.travel-time-badge {
+    background-color: #374151;
+    border-radius: 4px;
+    padding: 2px 6px;
+}
+
+/* Legacy World Map Styling (kept for backwards compatibility) */
+.world-map-container {
+    position: relative;
+    border-radius: 0.25rem;
+    overflow: hidden;
+    background-color: #001426;
+}
+
+.world-map {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+.world-map-controls {
+    background-color: rgba(0, 0, 0, 0.7);
+    padding: 10px;
+    position: relative;
+    bottom: 0;
+    width: 100%;
+}
+
+/* SVG Map Interactive Elements */
+.country {
+    stroke: #00ccff;
+    stroke-width: 1.5;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.country:hover {
+    filter: brightness(1.5);
+    stroke-width: 2;
+}
+
+.country-name {
+    fill: #00ccff;
+    font-family: 'Arial', sans-serif;
+    font-size: 10px;
+    text-anchor: middle;
+    pointer-events: none;
+}
+
+.country-link {
+    fill: #00aeff;
+    stroke: #00aeff;
+    stroke-width: 1;
+    stroke-dasharray: 3, 2;
+    fill: none;
+    opacity: 0.5;
+}
+
+.continent-label {
+    fill: #00eaff;
+    font-family: 'Arial', sans-serif;
+    font-size: 14px;
+    font-weight: bold;
+    text-anchor: middle;
+    pointer-events: none;
+}
+
+/* Nation Markers on the Map */
+.nation-marker {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    transform: translate(-50%, -50%);
+    cursor: pointer;
+    z-index: 10;
+    transition: all 0.2s ease;
+}
+
+.nation-marker:hover {
+    transform: translate(-50%, -50%) scale(1.5);
+    box-shadow: 0 0 8px rgba(255, 255, 255, 0.8);
+}
+
+.nation-marker.self {
+    background-color: #3b82f6; /* Primary blue for self */
+    border-color: white;
+    width: 16px;
+    height: 16px;
+}
+
+.nation-marker.ally {
+    background-color: #10b981; /* Success green for allies */
+}
+
+.nation-marker.enemy {
+    background-color: #ef4444; /* Danger red for enemies */
+}
+
+.nation-marker.neutral {
+    background-color: #9ca3af; /* Gray for neutral */
+}
+
+.nation-marker-tooltip {
+    position: absolute;
+    background-color: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 5px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    transform: translate(-50%, -100%);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    z-index: 20;
+    white-space: nowrap;
+    pointer-events: none;
+}
+
+/* Relation Cards */
+.relation-card {
+    background-color: #1f2937;
+    border: 1px solid #374151;
+    margin-bottom: 20px;
+    transition: all 0.2s ease;
+}
+
+.relation-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+.relation-card.friendly {
+    border-left: 4px solid #10b981;
+}
+
+.relation-card.neutral {
+    border-left: 4px solid #9ca3af;
+}
+
+.relation-card.hostile {
+    border-left: 4px solid #ef4444;
+}
+
+.relation-card .card-title {
+    font-size: 1.1rem;
+}
+
+.relation-value {
+    font-weight: bold;
+}
+
+.relation-value.positive {
+    color: #10b981;
+}
+
+.relation-value.negative {
+    color: #ef4444;
+}
+
+.war-status {
+    color: #ef4444;
+    font-size: 0.8rem;
+}
+
+.peace-status {
+    color: #10b981;
+    font-size: 0.8rem;
+}
+
+/* Nation Relations Page */
+.relation-details {
+    background-color: #1f2937;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.relation-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.relation-status {
+    padding: 0.5rem 1rem;
+    border-radius: 0.25rem;
+    color: white;
+}
+
+.relation-modifiers {
+    background-color: #111827;
+    padding: 1rem;
+    border-radius: 0.25rem;
+}
+
+.modifier-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #374151;
+}
+
+.modifier-item:last-child {
+    border-bottom: none;
+}
+
+.modifier-value {
+    font-weight: bold;
+}
+
+.modifier-value.positive {
+    color: #10b981;
+}
+
+.modifier-value.negative {
+    color: #ef4444;
+}

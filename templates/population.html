@@ -1,0 +1,318 @@
+{% extends "layout.html" %}
+
+{% block title %}Population Management - EcoWorld{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="mb-4">Population Management</h1>
+    
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="stat-card mb-4">
+                <h3>Current Distribution</h3>
+                <div class="row">
+                    <div class="col-md-6">
+                        <canvas id="population-chart"></canvas>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="population-total">
+                            <p><strong>Total Population:</strong> {{ "{:,}".format(nation.total_population) }}</p>
+                            <p>Distribution Total: <span id="total-population" class="{% if nation.agriculture_population + nation.industry_population + nation.energy_population + nation.research_population + nation.military_population == 100 %}text-success{% else %}text-danger{% endif %}">{{ nation.agriculture_population + nation.industry_population + nation.energy_population + nation.research_population + nation.military_population }}</span>%</p>
+                            <p class="text-muted">(Must equal 100%)</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="stat-card mb-4">
+                <h3>Population Distribution</h3>
+                <form id="population-form" action="{{ url_for('game.population') }}" method="post">
+                    <div class="population-distribution">
+                        <div class="mb-4">
+                            <label for="agriculture" class="form-label">Agriculture (<span id="agriculture-value">{{ nation.agriculture_population }}</span>%)</label>
+                            <div class="d-flex align-items-center gap-2">
+                                <button type="button" class="btn btn-sm btn-outline-secondary decrement-btn" data-target="agriculture">-</button>
+                                <div class="flex-grow-1">
+                                    <input type="range" class="form-range" id="agriculture" name="agriculture" min="0" max="100" step="0.1" value="{{ nation.agriculture_population }}">
+                                </div>
+                                <button type="button" class="btn btn-sm btn-outline-secondary increment-btn" data-target="agriculture">+</button>
+                                <div class="input-group" style="width: 120px;">
+                                    <input type="number" class="form-control form-control-sm direct-input" id="agriculture-direct" value="{{ nation.agriculture_population }}" step="0.1" min="0" max="100">
+                                    <span class="input-group-text">%</span>
+                                </div>
+                            </div>
+                            <div class="form-text">Produces food resources</div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="industry" class="form-label">Industry (<span id="industry-value">{{ nation.industry_population }}</span>%)</label>
+                            <div class="d-flex align-items-center gap-2">
+                                <button type="button" class="btn btn-sm btn-outline-secondary decrement-btn" data-target="industry">-</button>
+                                <div class="flex-grow-1">
+                                    <input type="range" class="form-range" id="industry" name="industry" min="0" max="100" step="0.1" value="{{ nation.industry_population }}">
+                                </div>
+                                <button type="button" class="btn btn-sm btn-outline-secondary increment-btn" data-target="industry">+</button>
+                                <div class="input-group" style="width: 120px;">
+                                    <input type="number" class="form-control form-control-sm direct-input" id="industry-direct" value="{{ nation.industry_population }}" step="0.1" min="0" max="100">
+                                    <span class="input-group-text">%</span>
+                                </div>
+                            </div>
+                            <div class="form-text">Produces raw materials</div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="energy" class="form-label">Energy (<span id="energy-value">{{ nation.energy_population }}</span>%)</label>
+                            <div class="d-flex align-items-center gap-2">
+                                <button type="button" class="btn btn-sm btn-outline-secondary decrement-btn" data-target="energy">-</button>
+                                <div class="flex-grow-1">
+                                    <input type="range" class="form-range" id="energy" name="energy" min="0" max="100" step="0.1" value="{{ nation.energy_population }}">
+                                </div>
+                                <button type="button" class="btn btn-sm btn-outline-secondary increment-btn" data-target="energy">+</button>
+                                <div class="input-group" style="width: 120px;">
+                                    <input type="number" class="form-control form-control-sm direct-input" id="energy-direct" value="{{ nation.energy_population }}" step="0.1" min="0" max="100">
+                                    <span class="input-group-text">%</span>
+                                </div>
+                            </div>
+                            <div class="form-text">Produces energy resources</div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="research" class="form-label">Research (<span id="research-value">{{ nation.research_population }}</span>%)</label>
+                            <div class="d-flex align-items-center gap-2">
+                                <button type="button" class="btn btn-sm btn-outline-secondary decrement-btn" data-target="research">-</button>
+                                <div class="flex-grow-1">
+                                    <input type="range" class="form-range" id="research" name="research" min="0" max="100" step="0.1" value="{{ nation.research_population }}">
+                                </div>
+                                <button type="button" class="btn btn-sm btn-outline-secondary increment-btn" data-target="research">+</button>
+                                <div class="input-group" style="width: 120px;">
+                                    <input type="number" class="form-control form-control-sm direct-input" id="research-direct" value="{{ nation.research_population }}" step="0.1" min="0" max="100">
+                                    <span class="input-group-text">%</span>
+                                </div>
+                            </div>
+                            <div class="form-text">Produces technology points and speeds up research</div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="military" class="form-label">Military (<span id="military-value">{{ nation.military_population }}</span>%)</label>
+                            <div class="d-flex align-items-center gap-2">
+                                <button type="button" class="btn btn-sm btn-outline-secondary decrement-btn" data-target="military">-</button>
+                                <div class="flex-grow-1">
+                                    <input type="range" class="form-range" id="military" name="military" min="0" max="100" step="0.1" value="{{ nation.military_population }}">
+                                </div>
+                                <button type="button" class="btn btn-sm btn-outline-secondary increment-btn" data-target="military">+</button>
+                                <div class="input-group" style="width: 120px;">
+                                    <input type="number" class="form-control form-control-sm direct-input" id="military-direct" value="{{ nation.military_population }}" step="0.1" min="0" max="100">
+                                    <span class="input-group-text">%</span>
+                                </div>
+                            </div>
+                            <div class="form-text">Enhances military production and defense</div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex flex-wrap gap-3 justify-content-between align-items-center mb-4">
+                        <div class="text-center">
+                            <h5 class="mb-2">Total Distribution</h5>
+                            <div class="d-flex align-items-center justify-content-center">
+                                <span id="total-display" class="badge bg-{% if nation.agriculture_population + nation.industry_population + nation.energy_population + nation.research_population + nation.military_population == 100 %}success{% else %}danger{% endif %} fs-5 me-2">
+                                    {{ nation.agriculture_population + nation.industry_population + nation.energy_population + nation.research_population + nation.military_population }}%
+                                </span>
+                                <button type="button" id="auto-balance" class="btn btn-primary" title="Automatically adjust values to equal exactly 100%">
+                                    <i class="fas fa-balance-scale-right"></i> Auto-Balance
+                                </button>
+                            </div>
+                            <small class="text-muted d-block mt-1">(Must equal 100%)</small>
+                        </div>
+                    </div>
+
+                    <div class="population-presets mb-4">
+                        <h4>Quick Presets</h4>
+                        <div class="d-flex flex-wrap gap-2">
+                            <div class="btn-group mb-2" role="group">
+                                <button type="button" id="preset-balanced" class="btn btn-outline-primary">Balanced</button>
+                                <button type="button" id="preset-economic" class="btn btn-outline-success">Economic</button>
+                                <button type="button" id="preset-military" class="btn btn-outline-danger">Military</button>
+                                <button type="button" id="preset-technological" class="btn btn-outline-info">Technological</button>
+                            </div>
+                            
+                            <button type="button" id="optimize-resources" class="btn btn-warning mb-2">
+                                <i class="fas fa-magic"></i> Ottimizza Risorse
+                            </button>
+                        </div>
+                        
+                        <div id="optimization-explanation" class="alert alert-info mt-2" style="display: none;">
+                            <p><strong>Ottimizzazione Automatica:</strong> Ho calcolato una distribuzione ottimale basata sul tuo consumo attuale e sulle necessità.</p>
+                            <div id="optimization-details"></div>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">Update Distribution</button>
+                </form>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="stat-card mb-4">
+                <h3>Resources</h3>
+                <p><i class="fas fa-gem" style="color: #9b59b6;"></i> Raw Materials: {{ "{:,.0f}".format(resources.raw_materials) }}</p>
+                <p><i class="fas fa-apple-alt" style="color: #2ecc71;"></i> Food: {{ "{:,.0f}".format(resources.food) }}</p>
+                <p><i class="fas fa-bolt" style="color: #f39c12;"></i> Energy: {{ "{:,.0f}".format(resources.energy) }}</p>
+                <p><i class="fas fa-flask" style="color: #3498db;"></i> Technology Points: {{ "{:,.0f}".format(resources.technology_points) }}</p>
+                <p><i class="fas fa-coins" style="color: #f1c40f;"></i> Currency: {{ "{:,.0f}".format(resources.currency) }}</p>
+            </div>
+            
+            <div class="production-estimates">
+                <h3>Production Estimates</h3>
+                <p class="text-muted">Based on current population distribution</p>
+                
+                <h5 class="mb-3">Risorse</h5>
+                
+                <div class="mb-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h6><i class="fas fa-apple-alt" style="color: #2ecc71;"></i> Cibo</h6>
+                        <span class="badge {% if resources.food_production > resources.food_consumption %}bg-success{% else %}bg-danger{% endif %}">
+                            {{ "{:+,.0f}".format(resources.food_production - resources.food_consumption) }}/ora
+                        </span>
+                    </div>
+                    <div class="d-flex justify-content-between small">
+                        <span>Produzione: <span id="food-production-estimate">{{ "{:,.0f}".format(resources.food_production) }}</span></span>
+                        <span>Consumo: {{ "{:,.0f}".format(resources.food_consumption) }}</span>
+                    </div>
+                    <div class="mt-1">
+                        <span class="small text-muted">Rapporto: 
+                            {% if resources.food_consumption > 0 %}
+                                {% set ratio = (resources.food_production / resources.food_consumption)|round(2) %}
+                                <span class="{% if ratio >= 1 %}text-success{% else %}text-danger{% endif %}">
+                                    {{ ratio }}x
+                                </span>
+                            {% else %}
+                                <span class="text-success">∞</span>
+                            {% endif %}
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="mb-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h6><i class="fas fa-gem" style="color: #9b59b6;"></i> Materie Prime</h6>
+                        <span class="badge {% if resources.raw_materials_production > resources.raw_materials_consumption %}bg-success{% else %}bg-danger{% endif %}">
+                            {{ "{:+,.0f}".format(resources.raw_materials_production - resources.raw_materials_consumption) }}/ora
+                        </span>
+                    </div>
+                    <div class="d-flex justify-content-between small">
+                        <span>Produzione: <span id="raw-materials-production-estimate">{{ "{:,.0f}".format(resources.raw_materials_production) }}</span></span>
+                        <span>Consumo: {{ "{:,.0f}".format(resources.raw_materials_consumption) }}</span>
+                    </div>
+                    <div class="mt-1">
+                        <span class="small text-muted">Rapporto: 
+                            {% if resources.raw_materials_consumption > 0 %}
+                                {% set ratio = (resources.raw_materials_production / resources.raw_materials_consumption)|round(2) %}
+                                <span class="{% if ratio >= 1 %}text-success{% else %}text-danger{% endif %}">
+                                    {{ ratio }}x
+                                </span>
+                            {% else %}
+                                <span class="text-success">∞</span>
+                            {% endif %}
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="mb-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h6><i class="fas fa-bolt" style="color: #f39c12;"></i> Energia</h6>
+                        <span class="badge {% if resources.energy_production > resources.energy_consumption %}bg-success{% else %}bg-danger{% endif %}">
+                            {{ "{:+,.0f}".format(resources.energy_production - resources.energy_consumption) }}/ora
+                        </span>
+                    </div>
+                    <div class="d-flex justify-content-between small">
+                        <span>Produzione: <span id="energy-production-estimate">{{ "{:,.0f}".format(resources.energy_production) }}</span></span>
+                        <span>Consumo: {{ "{:,.0f}".format(resources.energy_consumption) }}</span>
+                    </div>
+                    <div class="mt-1">
+                        <span class="small text-muted">Rapporto: 
+                            {% if resources.energy_consumption > 0 %}
+                                {% set ratio = (resources.energy_production / resources.energy_consumption)|round(2) %}
+                                <span class="{% if ratio >= 1 %}text-success{% else %}text-danger{% endif %}">
+                                    {{ ratio }}x
+                                </span>
+                            {% else %}
+                                <span class="text-success">∞</span>
+                            {% endif %}
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="mb-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h6><i class="fas fa-flask" style="color: #3498db;"></i> Tecnologia</h6>
+                        <span class="badge bg-info">
+                            {{ "{:+,.0f}".format(resources.technology_production) }}/ora
+                        </span>
+                    </div>
+                    <div class="d-flex justify-content-between small">
+                        <span>Produzione: <span id="technology-production-estimate">{{ "{:,.0f}".format(resources.technology_production) }}</span></span>
+                        <span>Consumo: 0</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="stat-card mb-4">
+                <h3>Population Strategy Tips</h3>
+                <ul>
+                    <li>Balance your population based on your current needs</li>
+                    <li>Increase agriculture when food is low</li>
+                    <li>Boost industry for military production</li>
+                    <li>Allocate to research for faster technology development</li>
+                    <li>Military population enhances defense capabilities</li>
+                </ul>
+            </div>
+            
+            <div class="stat-card">
+                <h3><i class="fas fa-lightbulb"></i> Suggerimenti Automatici</h3>
+                <div class="mt-3">
+                    {% if resources.food_production < resources.food_consumption %}
+                        <div class="alert alert-warning">
+                            <i class="fas fa-apple-alt me-2"></i> La produzione di cibo è insufficiente. Considera di aumentare la popolazione nell'agricoltura di almeno {{ ((resources.food_consumption - resources.food_production) / 10 * 100 / nation.total_population)|round(1) }}%.
+                        </div>
+                    {% endif %}
+                    
+                    {% if resources.raw_materials_production < resources.raw_materials_consumption %}
+                        <div class="alert alert-warning">
+                            <i class="fas fa-gem me-2"></i> La produzione di materie prime è insufficiente. Considera di aumentare la popolazione nell'industria di almeno {{ ((resources.raw_materials_consumption - resources.raw_materials_production) / 10 * 100 / nation.total_population)|round(1) }}%.
+                        </div>
+                    {% endif %}
+                    
+                    {% if resources.energy_production < resources.energy_consumption %}
+                        <div class="alert alert-warning">
+                            <i class="fas fa-bolt me-2"></i> La produzione di energia è insufficiente. Considera di aumentare la popolazione nel settore energetico di almeno {{ ((resources.energy_consumption - resources.energy_production) / 10 * 100 / nation.total_population)|round(1) }}%.
+                        </div>
+                    {% endif %}
+                    
+                    {% if resources.technology_production < 20 %}
+                        <div class="alert alert-info">
+                            <i class="fas fa-flask me-2"></i> La produzione di tecnologia è bassa. Aumentare la popolazione nella ricerca accelererà lo sviluppo tecnologico.
+                        </div>
+                    {% endif %}
+                    
+                    {% if resources.food_production > resources.food_consumption * 2 and
+                          resources.raw_materials_production > resources.raw_materials_consumption * 2 and
+                          resources.energy_production > resources.energy_consumption * 2 %}
+                        <div class="alert alert-success">
+                            <i class="fas fa-check-circle me-2"></i> Le tue risorse sono ben bilanciate! Puoi considerare di investire di più in ricerca o militare per lo sviluppo a lungo termine.
+                        </div>
+                    {% endif %}
+                    
+                    {% if nation.military_population < 10 %}
+                        <div class="alert alert-info">
+                            <i class="fas fa-shield-alt me-2"></i> La tua popolazione militare è bassa ({{ nation.military_population }}%). Considera di aumentarla per migliorare la tua difesa.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/population.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,441 @@
+/* EcoWorld Main Stylesheet */
+
+/* Base Styles */
+body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--bs-dark);
+    color: var(--bs-light);
+}
+
+main {
+    flex: 1;
+    padding: 2rem 0;
+}
+
+.footer {
+    margin-top: auto;
+    padding: 1rem 0;
+    background-color: rgba(0, 0, 0, 0.2);
+}
+
+/* Landing Page */
+.hero-section {
+    padding: 5rem 0;
+    background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), 
+                url('https://source.unsplash.com/random/1200x800/?global,map') no-repeat center center;
+    background-size: cover;
+    text-align: center;
+    color: white;
+}
+
+.feature-icon {
+    background-color: var(--bs-primary);
+    color: white;
+    padding: 1rem;
+    border-radius: 50%;
+    margin-bottom: 1rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 4rem;
+    height: 4rem;
+}
+
+/* Auth Pages */
+.auth-container {
+    max-width: 500px;
+    margin: 2rem auto;
+    padding: 2rem;
+    border-radius: 0.5rem;
+    background-color: var(--bs-dark);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+/* Dashboard */
+.dashboard-header {
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.stat-card {
+    background-color: var(--bs-dark);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 0.5rem;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.2);
+}
+
+.resource-icon {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+}
+
+.dashboard-tabs {
+    display: flex;
+    overflow-x: auto;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.dashboard-tab {
+    cursor: pointer;
+    padding: 1rem 1.5rem;
+    margin-right: 0.5rem;
+    border-radius: 0.5rem 0.5rem 0 0;
+    background-color: var(--bs-dark);
+    color: var(--bs-light);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-bottom: none;
+    transition: background-color 0.3s ease;
+}
+
+.dashboard-tab.active {
+    background-color: var(--bs-primary);
+    color: white;
+}
+
+.dashboard-content {
+    display: none;
+    padding: 1.5rem;
+    background-color: var(--bs-dark);
+    border-radius: 0 0 0.5rem 0.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-top: none;
+}
+
+.dashboard-content.active {
+    display: block;
+}
+
+/* Resource Display */
+.resource-display {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.resource-item {
+    flex: 1;
+    min-width: 150px;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    background-color: rgba(255, 255, 255, 0.05);
+    text-align: center;
+}
+
+.resource-amount {
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+.resource-production {
+    font-size: 0.9rem;
+    color: var(--bs-success);
+}
+
+.resource-consumption {
+    font-size: 0.9rem;
+    color: var(--bs-danger);
+}
+
+/* Charts */
+.chart-container {
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 0.5rem;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.chart-title {
+    margin-bottom: 1rem;
+    font-size: 1.2rem;
+    color: var(--bs-light);
+}
+
+/* Market */
+.market-header {
+    margin-bottom: 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.market-filters {
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 0.5rem;
+}
+
+.market-listing {
+    margin-bottom: 1rem;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    background-color: rgba(255, 255, 255, 0.05);
+    transition: transform 0.3s ease;
+}
+
+.market-listing:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.1);
+}
+
+.market-timer-container {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.market-timer {
+    font-size: 2rem;
+    font-weight: bold;
+    color: var(--bs-warning);
+}
+
+/* Technology */
+.tech-tree {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 2rem;
+}
+
+.tech-category {
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 0.5rem;
+    padding: 1.5rem;
+}
+
+.tech-items {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1rem;
+}
+
+.tech-item {
+    border-radius: 0.5rem;
+    padding: 1rem;
+    background-color: rgba(255, 255, 255, 0.05);
+    transition: transform 0.3s ease;
+}
+
+.tech-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+}
+
+.tech-name {
+    font-weight: bold;
+}
+
+.tech-level {
+    font-size: 0.9rem;
+    color: var(--bs-info);
+}
+
+.tech-body {
+    font-size: 0.9rem;
+}
+
+.tech-prereqs {
+    margin-top: 0.5rem;
+    font-style: italic;
+    color: var(--bs-secondary);
+}
+
+.tech-researched {
+    border: 1px solid var(--bs-success);
+}
+
+.tech-researching {
+    border: 1px solid var(--bs-warning);
+}
+
+.tech-unavailable {
+    border: 1px solid var(--bs-secondary);
+    opacity: 0.7;
+}
+
+/* Military */
+.military-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.military-stat {
+    flex: 1;
+    min-width: 200px;
+    padding: 1.5rem;
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 0.5rem;
+    text-align: center;
+}
+
+.military-value {
+    font-size: 2rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+}
+
+.military-units {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.military-unit {
+    padding: 1rem;
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.unit-icon {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+}
+
+.unit-count {
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+/* Population */
+.population-distribution {
+    margin-bottom: 2.5rem;
+}
+
+.population-slider {
+    margin-bottom: 2rem;
+}
+
+.population-presets {
+    margin-bottom: 2rem;
+}
+
+.population-total {
+    font-size: 1.5rem;
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+.production-estimates {
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 0.5rem;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+/* Rankings */
+.rankings-tabs {
+    display: flex;
+    overflow-x: auto;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.ranking-tab {
+    cursor: pointer;
+    padding: 1rem 1.5rem;
+    margin-right: 0.5rem;
+    border-radius: 0.5rem 0.5rem 0 0;
+    background-color: var(--bs-dark);
+    color: var(--bs-light);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-bottom: none;
+    transition: background-color 0.3s ease;
+}
+
+.ranking-tab.active {
+    background-color: var(--bs-primary);
+    color: white;
+}
+
+.ranking-content {
+    display: none;
+    padding: 1.5rem;
+    background-color: var(--bs-dark);
+    border-radius: 0 0 0.5rem 0.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-top: none;
+}
+
+.ranking-content.active {
+    display: block;
+}
+
+.ranking-table {
+    width: 100%;
+}
+
+.ranking-position {
+    width: 3rem;
+    text-align: center;
+    font-weight: bold;
+}
+
+/* Utilities */
+.text-success {
+    color: var(--bs-success) !important;
+}
+
+.text-danger {
+    color: var(--bs-danger) !important;
+}
+
+.text-warning {
+    color: var(--bs-warning) !important;
+}
+
+.text-info {
+    color: var(--bs-info) !important;
+}
+
+/* Loading Indicator */
+.loading {
+    display: inline-block;
+    width: 2rem;
+    height: 2rem;
+    border: 0.25rem solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: var(--bs-primary);
+    animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .dashboard-tabs {
+        flex-direction: column;
+    }
+    
+    .dashboard-tab {
+        border-radius: 0;
+        margin-bottom: 0.5rem;
+    }
+    
+    .tech-tree {
+        grid-template-columns: 1fr;
+    }
+    
+    .military-stats, .military-units {
+        grid-template-columns: 1fr;
+    }
+}

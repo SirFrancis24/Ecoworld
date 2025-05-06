@@ -1,0 +1,443 @@
+{% extends "layout.html" %}
+
+{% block title %}Technology - EcoWorld{% endblock %}
+
+{% block head %}
+    {{ super() }}
+    <!-- Auto refresh the page every 60 seconds -->
+    <meta http-equiv="refresh" content="60">
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1 class="mb-0">Technology Research</h1>
+        <div class="research-resources">
+            <span class="badge bg-info me-2"><i class="fas fa-flask"></i> {{ "{:,.0f}".format(resources.technology_points) }}</span>
+            <span class="badge bg-secondary me-2"><i class="fas fa-gem"></i> {{ "{:,.0f}".format(resources.raw_materials) }}</span>
+            <span class="badge bg-warning me-2"><i class="fas fa-bolt"></i> {{ "{:,.0f}".format(resources.energy) }}</span>
+            <span class="badge bg-success"><i class="fas fa-coins"></i> {{ "{:,.0f}".format(resources.currency) }}</span>
+        </div>
+    </div>
+    
+    
+    
+    <!-- Research Progress Card -->
+    {% if in_progress_techs %}
+        <div class="card mb-3">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Research in Progress</h5>
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-sm mb-0">
+                    <thead>
+                        <tr>
+                            <th>Technology</th>
+                            <th>Progress</th>
+                            <th width="20%">Completion</th>
+                            <th width="10%">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for tech in in_progress_techs %}
+                        <tr>
+                            <td>
+                                <strong>{{ tech.name }}</strong> (Level {{ tech.level + 1 }})
+                                <div><small class="text-muted">{{ tech.category }}</small></div>
+                            </td>
+                            <td>
+                                <div class="progress" style="height: 15px;">
+                                    <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                                         role="progressbar" 
+                                         style="width: {{ (tech.research_points_current / tech.research_points_required) * 100 }}%"
+                                         aria-valuenow="{{ (tech.research_points_current / tech.research_points_required) * 100 }}" 
+                                         aria-valuemin="0" 
+                                         aria-valuemax="100">
+                                        {{ "{:.1f}".format((tech.research_points_current / tech.research_points_required) * 100) }}%
+                                    </div>
+                                </div>
+                                <small>{{ "{:,.0f}".format(tech.research_points_current) }}/{{ "{:,.0f}".format(tech.research_points_required) }}</small>
+                            </td>
+                            <td>
+                                <small class="static-timer">
+                                    {% if tech.researching %}
+                                        {% if tech.estimated_completion %}
+                                            {% set remaining_seconds = (tech.estimated_completion - now).total_seconds() | int %}
+                                            {% if remaining_seconds <= 0 %}
+                                                <span class="text-success">Completed</span>
+                                            {% else %}
+                                                {% set hours = (remaining_seconds // 3600) | int %}
+                                                {% set minutes = ((remaining_seconds % 3600) // 60) | int %}
+                                                {% set seconds = (remaining_seconds % 60) | int %}
+                                                {{ "%02d:%02d:%02d" | format(hours, minutes, seconds) }}
+                                                <!-- Debug info -->
+                                                <span class="d-none">
+                                                    ({{ tech.estimated_completion }} - {{ now }} = {{ remaining_seconds }}s)
+                                                </span>
+                                            {% endif %}
+                                        {% else %}
+                                            Calculating...
+                                        {% endif %}
+                                    {% else %}
+                                        {% if (tech.research_points_current / tech.research_points_required) * 100 >= 99.9 %}
+                                            <span class="text-success">Completed</span>
+                                        {% else %}
+                                            <span class="text-info">Ready</span>
+                                        {% endif %}
+                                    {% endif %}
+                                </small>
+                            </td>
+                            <td>
+                                <form action="{{ url_for('technology.cancel_research_route') }}" method="post">
+                                    <input type="hidden" name="technology_id" value="{{ tech.id }}">
+                                    <button type="submit" class="btn btn-sm btn-danger">Cancel</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    {% else %}
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle"></i> No technologies currently being researched. Select a technology from below to start researching.
+        </div>
+    {% endif %}
+    
+    <!-- Research Categories -->
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0">Research Progress by Category</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <!-- Debug information for tech categories -->
+                        <div class="d-none">
+                            <b>Available Technologies:</b> {{ technologies|length }} technologies.
+                        </div>
+                        
+                        <!-- We no longer need to consolidate techs in the template since it's handled in the Python code -->
+                        <!-- Debug technologies for categories -->
+                        {% for category, techs in tech_categories.items() %}
+                            <div class="d-none">
+                                Category: {{ category }} - {{ techs|length }} technologies
+                                {% for tech in techs %}
+                                    - {{ tech.name }}: {{ tech.combined_level if tech.combined_level is defined else tech.level }}/{{ tech.max_level }}
+                                {% endfor %}
+                            </div>
+                        {% endfor %}
+                        
+                        <!-- Display technology progress by category -->
+                        {% for category, techs in tech_categories.items() %}
+                            <div class="col-md-3 col-sm-6 mb-3">
+                                {% set category_color = "bg-light" %}
+                                {% set category_icon = "fa-microscope" %}
+                                
+                                {% if category == "Agriculture" %}
+                                    {% set category_color = "bg-success text-white" %}
+                                    {% set category_icon = "fa-seedling" %}
+                                {% elif category == "Industry" %}
+                                    {% set category_color = "bg-secondary text-white" %}
+                                    {% set category_icon = "fa-industry" %}
+                                {% elif category == "Energy" %}
+                                    {% set category_color = "bg-warning" %}
+                                    {% set category_icon = "fa-bolt" %}
+                                {% elif category == "Research" %}
+                                    {% set category_color = "bg-info text-white" %}
+                                    {% set category_icon = "fa-flask" %}
+                                {% elif category == "Military" %}
+                                    {% set category_color = "bg-danger text-white" %}
+                                    {% set category_icon = "fa-shield-alt" %}
+                                {% elif category == "Medicine" %}
+                                    {% set category_color = "bg-primary text-white" %}
+                                    {% set category_icon = "fa-medkit" %}
+                                {% elif category == "Computing" %}
+                                    {% set category_color = "bg-info text-white" %}
+                                    {% set category_icon = "fa-microchip" %}
+                                {% elif category == "Physics" %}
+                                    {% set category_color = "bg-primary text-white" %}
+                                    {% set category_icon = "fa-atom" %}
+                                {% endif %}
+
+                                <div class="card h-100">
+                                    <div class="card-header py-1 {{ category_color }}">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <h6 class="mb-0"><i class="fas {{ category_icon }} me-2"></i> {{ category }}</h6>
+                                            <small class="badge bg-light text-dark">{{ techs|length }}</small>
+                                        </div>
+                                    </div>
+                                    <div class="card-body p-2">
+                                        {% set total_levels = 0 %}
+                                        {% set max_levels = 0 %}
+                                        
+                                        <!-- Calculate progress for this category using combined levels if available -->
+                                        {% for tech in techs %}
+                                            {% if tech.combined_level is defined %}
+                                                {% set tech_level = tech.combined_level %}
+                                            {% elif tech.display_level is defined %}
+                                                {% set tech_level = tech.display_level %}
+                                            {% else %}
+                                                {% set tech_level = tech.level %}
+                                            {% endif %}
+                                            
+                                            {% set total_levels = total_levels + tech_level %}
+                                            {% set max_levels = max_levels + tech.max_level %}
+                                            
+                                            <!-- Debug each tech's level -->
+                                            <div class="d-none">
+                                                {{ tech.name }}: {{ tech_level }}/{{ tech.max_level }}
+                                                {% if tech.combined_level is defined %}
+                                                    (Combined level from multiple DB entries)
+                                                {% elif tech.display_level is defined %}
+                                                    (Combined from multiple entries)
+                                                {% endif %}
+                                            </div>
+                                        {% endfor %}
+                                        
+                                        {% set progress = 0 if max_levels == 0 else (total_levels / max_levels) * 100 %}
+                                        
+                                        <!-- Assign appropriate color based on category -->
+                                        {% set progress_color = "bg-secondary" %}
+                                        {% if category == "Agriculture" %}
+                                            {% set progress_color = "bg-success" %}
+                                        {% elif category == "Industry" %}
+                                            {% set progress_color = "bg-secondary" %}
+                                        {% elif category == "Energy" %}
+                                            {% set progress_color = "bg-warning" %}
+                                        {% elif category == "Research" %}
+                                            {% set progress_color = "bg-info" %}
+                                        {% elif category == "Military" %}
+                                            {% set progress_color = "bg-danger" %}
+                                        {% elif category == "Medicine" %}
+                                            {% set progress_color = "bg-primary" %}
+                                        {% elif category == "Computing" %}
+                                            {% set progress_color = "bg-info" %}
+                                        {% elif category == "Physics" %}
+                                            {% set progress_color = "bg-primary" %}
+                                        {% endif %}
+                                        
+                                        <div class="progress mb-1" style="height: 10px;">
+                                            <div class="progress-bar {{ progress_color }}" role="progressbar" style="width: {{ progress }}%;" 
+                                                 aria-valuenow="{{ progress }}" aria-valuemin="0" aria-valuemax="100">
+                                            </div>
+                                        </div>
+                                        <small class="text-muted">{{ total_levels }}/{{ max_levels }} levels</small>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    
+    
+    <!-- Technologies by Tier -->
+    <div class="card mb-3">
+        <div class="card-header bg-success text-white">
+            <h5 class="mb-0">Technology Tree</h5>
+        </div>
+        <div class="card-body">
+            <!-- Tier Accordion -->
+            <div class="accordion" id="techAccordion">
+                {% for tier, techs in tech_by_tier.items() %}
+                    <div class="accordion-item {% if tier > 0 and tier not in [0, 1] %}border-start border-5 {% if tier == 2 %}border-info{% elif tier == 3 %}border-primary{% elif tier == 4 %}border-warning{% elif tier >= 5 %}border-danger{% endif %}{% endif %}">
+                        <h2 class="accordion-header" id="heading{{ tier }}">
+                            <button class="accordion-button {% if tier > 0 %}collapsed{% endif %}" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ tier }}" aria-expanded="{% if tier == 0 %}true{% else %}false{% endif %}" aria-controls="collapse{{ tier }}">
+                                <div class="d-flex justify-content-between w-100 align-items-center">
+                                    <span>
+                                        {% if tier == 0 %}
+                                            <i class="fas fa-star text-warning me-2"></i> Basic Technologies
+                                        {% elif tier == 1 %}
+                                            <i class="fas fa-arrow-up text-info me-2"></i> Intermediate Technologies
+                                        {% elif tier == 2 %}
+                                            <i class="fas fa-arrow-up text-primary me-2"></i> Advanced Technologies
+                                        {% elif tier == 3 %}
+                                            <i class="fas fa-arrow-up text-success me-2"></i> Superior Technologies
+                                        {% elif tier == 4 %}
+                                            <i class="fas fa-arrow-up text-warning me-2"></i> Revolutionary Technologies
+                                        {% else %}
+                                            <i class="fas fa-arrow-up text-danger me-2"></i> Future Technologies (Tier {{ tier }})
+                                        {% endif %}
+                                    </span>
+                                    <small class="badge bg-secondary ms-2">{{ techs|count }} technologies</small>
+                                </div>
+                            </button>
+                        </h2>
+                        <div id="collapse{{ tier }}" class="accordion-collapse collapse {% if tier == 0 %}show{% endif %}" aria-labelledby="heading{{ tier }}" data-bs-parent="#techAccordion">
+                            <div class="accordion-body">
+                                <div class="row">
+                                    {% for tech in techs %}
+                                        <div class="col-md-6 mb-3">
+                                            <div class="card h-100 {% if tech.level > 0 %}border-success{% elif tech in available_techs %}border-primary{% else %}border-light{% endif %} shadow-sm">
+                                                <div class="card-header py-2 {% if tech.level > 0 %}bg-success text-white{% elif tech in available_techs %}bg-primary text-white{% else %}bg-light{% endif %}">
+                                                    <div class="d-flex justify-content-between align-items-center">
+                                                        <h6 class="mb-0">{{ tech.name }}</h6>
+                                                        <span class="badge {% if tech.level > 0 %}bg-light text-success{% elif tech in available_techs %}bg-light text-primary{% else %}bg-secondary{% endif %}">
+                                                            {% if tech.level > 0 %}
+                                                                Lv. {{ tech.level }}/{{ tech.max_level }}
+                                                            {% elif tech in available_techs %}
+                                                                Available
+                                                            {% else %}
+                                                                Locked
+                                                            {% endif %}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                <div class="card-body p-3">
+                                                    <p class="card-text small">{{ tech.description[:100] }}{% if tech.description|length > 100 %}...{% endif %}</p>
+                                                    
+                                                    <!-- Technology Benefits -->
+                                                    {% if tech_effects and tech.id in tech_effects %}
+                                                    <div class="mb-2">
+                                                        <small class="text-success"><i class="fas fa-chart-line"></i> Benefits:
+                                                        {% for key, value in tech_effects[tech.id].items() %}
+                                                            {% if key == 'food_production' and value > 1 %}
+                                                            <span class="badge bg-success me-1">Food +{{ ((value - 1) * 100) | round }}%</span>
+                                                            {% elif key == 'raw_materials_production' and value > 1 %}
+                                                            <span class="badge bg-secondary me-1">Raw Materials +{{ ((value - 1) * 100) | round }}%</span>
+                                                            {% elif key == 'energy_production' and value > 1 %}
+                                                            <span class="badge bg-warning me-1">Energy +{{ ((value - 1) * 100) | round }}%</span>
+                                                            {% elif key == 'resource_consumption' and value < 1 %}
+                                                            <span class="badge bg-info me-1">Consumption -{{ ((1 - value) * 100) | round }}%</span>
+                                                            {% elif key == 'military_bonus' or key == 'military_strength' and value > 1 %}
+                                                            <span class="badge bg-danger me-1">Military +{{ ((value - 1) * 100) | round }}%</span>
+                                                            {% elif key == 'research_efficiency' or key == 'research_bonus' and value > 1 %}
+                                                            <span class="badge bg-primary me-1">Research +{{ ((value - 1) * 100) | round }}%</span>
+                                                            {% elif key == 'technology_points' and value > 1 %}
+                                                            <span class="badge bg-info me-1">Tech Points +{{ ((value - 1) * 100) | round }}%</span>
+                                                            {% elif key == 'espionage_bonus' or key == 'espionage_power' and value > 1 %}
+                                                            <span class="badge bg-dark me-1">Espionage +{{ ((value - 1) * 100) | round }}%</span>
+                                                            {% elif key == 'productivity' and value > 1 %}
+                                                            <span class="badge bg-primary me-1">Productivity +{{ ((value - 1) * 100) | round }}%</span>
+                                                            {% elif key == 'land_use_efficiency' and value > 1 %}
+                                                            <span class="badge bg-success me-1">Land Use +{{ ((value - 1) * 100) | round }}%</span>
+                                                            {% elif key == 'population_growth' and value > 1 %}
+                                                            <span class="badge bg-info me-1">Population +{{ ((value - 1) * 100) | round }}%</span>
+                                                            {% elif key == 'happiness' and value > 1 %}
+                                                            <span class="badge bg-primary me-1">Happiness +{{ ((value - 1) * 100) | round }}%</span>
+                                                            {% elif key == 'environmental_impact' and value > 1 %}
+                                                            <span class="badge bg-danger me-1">Environment +{{ ((value - 1) * 100) | round }}%</span>
+                                                            {% elif key == 'environmental_impact' and value < 1 %}
+                                                            <span class="badge bg-success me-1">Environment -{{ ((1 - value) * 100) | round }}%</span>
+                                                            {% elif key == 'consumption_efficiency' and value < 1 %}
+                                                            <span class="badge bg-success me-1">Consumption -{{ ((1 - value) * 100) | round }}%</span>
+                                                            {% elif key == 'consumption_efficiency' and value > 1 %}
+                                                            <span class="badge bg-success me-1">Efficiency +{{ ((value - 1) * 100) | round }}%</span>
+                                                            {% elif value > 1 %}
+                                                            <span class="badge bg-info me-1">{{ key|replace('_', ' ')|title }} +{{ ((value - 1) * 100) | round }}%</span>
+                                                            {% elif value < 1 and value > 0 %}
+                                                            <span class="badge bg-warning me-1">{{ key|replace('_', ' ')|title }} {{ ((value - 1) * 100) | round }}%</span>
+                                                            {% endif %}
+                                                        {% endfor %}
+                                                        </small>
+                                                    </div>
+                                                    {% else %}
+                                                    <div class="mb-2">
+                                                        <small class="text-success"><i class="fas fa-chart-line"></i> Benefits: 
+                                                        <!-- Fallback to use tech_id to lookup data from technologies.py -->
+                                                        {% set tech_data = tech.id|tech_data_from_id %}
+                                                        {% if tech_data and tech_data.effects %}
+                                                            {% for effect_name, effect_value in tech_data.effects.items() %}
+                                                                {% if effect_name == 'food_production' and effect_value > 1 %}
+                                                                <span class="badge bg-success me-1">Food +{{ ((effect_value - 1) * 100) | round }}%</span>
+                                                                {% elif effect_name == 'raw_materials_production' and effect_value > 1 %}
+                                                                <span class="badge bg-secondary me-1">Raw Materials +{{ ((effect_value - 1) * 100) | round }}%</span>
+                                                                {% elif effect_name == 'energy_production' and effect_value > 1 %}
+                                                                <span class="badge bg-warning me-1">Energy +{{ ((effect_value - 1) * 100) | round }}%</span>
+                                                                {% elif effect_name == 'resource_consumption' and effect_value < 1 %}
+                                                                <span class="badge bg-info me-1">Consumption -{{ ((1 - effect_value) * 100) | round }}%</span>
+                                                                {% elif effect_name == 'military_bonus' and effect_value > 1 %}
+                                                                <span class="badge bg-danger me-1">Military +{{ ((effect_value - 1) * 100) | round }}%</span>
+                                                                {% elif effect_name == 'research_efficiency' and effect_value > 1 %}
+                                                                <span class="badge bg-primary me-1">Research +{{ ((effect_value - 1) * 100) | round }}%</span>
+                                                                {% else %}
+                                                                <span class="badge bg-light text-dark me-1">{{ effect_name|replace('_', ' ')|title }} {{ ((effect_value - 1) * 100) | round if effect_value > 1 else ((1 - effect_value) * 100) | round }}%</span>
+                                                                {% endif %}
+                                                            {% endfor %}
+                                                        {% else %}
+                                                            <span class="text-muted">Not available</span>
+                                                        {% endif %}
+                                                        </small>
+                                                    </div>
+                                                    {% endif %}
+                                                    
+                                                    <!-- Technology Prerequisites -->
+                                                    {% if tech.prerequisites %}
+                                                    <div class="mb-2">
+                                                        <small class="text-primary"><i class="fas fa-link"></i> Prerequisites: 
+                                                        {% for tech_id in tech.prerequisites.split(',') %}
+                                                            {% if tech_id %}
+                                                                {% set prereq_matches = technologies|selectattr('id', 'eq', tech_id|int)|list %}
+                                                                {% if prereq_matches %}
+                                                                    {% set prereq = prereq_matches[0] %}
+                                                                    <span class="badge {% if prereq.level > 0 %}bg-success{% else %}bg-secondary{% endif %} me-1">{{ prereq.name }}</span>
+                                                                {% else %}
+                                                                    {# Find tech name directly from tech data #}
+                                                                    {% set tech_name = tech_id|int|tech_name_from_id %}
+                                                                    <span class="badge bg-secondary me-1">{{ tech_name }}</span>
+                                                                {% endif %}
+                                                            {% endif %}
+                                                        {% endfor %}
+                                                        </small>
+                                                    </div>
+                                                    {% endif %}
+                                                    
+                                                    <div class="d-flex justify-content-between align-items-center mt-2">
+                                                        <small class="text-muted">
+                                                            <i class="fas fa-gem text-secondary"></i> {{ 100 * (1 + 0.5 * tech.level) * 2 | round }}
+                                                            <i class="fas fa-bolt text-warning ms-1"></i> {{ 100 * (1 + 0.5 * tech.level) | round }}
+                                                            <i class="fas fa-coins text-success ms-1"></i> {{ 100 * (1 + 0.5 * tech.level) * 10 | round }}
+                                                        </small>
+                                                        
+                                                        <div>
+                                                            {% if tech.level < tech.max_level %}
+                                                                {% if tech in available_techs %}
+                                                                    <form action="{{ url_for('technology.research_technology') }}" method="post" class="d-inline">
+                                                                        <input type="hidden" name="technology_id" value="{{ tech.id }}">
+                                                                        <button type="submit" class="btn btn-sm btn-primary">Research</button>
+                                                                    </form>
+                                                                {% else %}
+                                                                    {% if not tech.prerequisites or tech.prerequisites == "" %}
+                                                                        <form action="{{ url_for('technology.research_technology') }}" method="post" class="d-inline">
+                                                                            <input type="hidden" name="technology_id" value="{{ tech.id }}">
+                                                                            <button type="submit" class="btn btn-sm btn-success">Research</button>
+                                                                        </form>
+                                                                    {% else %}
+                                                                        <button class="btn btn-sm btn-secondary" disabled title="Technology locked - complete prerequisites first">
+                                                                            Locked
+                                                                        </button>
+                                                                    {% endif %}
+                                                                {% endif %}
+                                                            {% else %}
+                                                                <span class="badge bg-success">Level Maxed</span>
+                                                            {% endif %}
+                                                            
+                                                            <a href="{{ url_for('technology.technology_details_page', tech_id=tech.id) }}" class="btn btn-sm btn-outline-secondary ms-1">
+                                                                <i class="fas fa-info-circle"></i>
+                                                            </a>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/tech.js') }}"></script>
+{% endblock %}

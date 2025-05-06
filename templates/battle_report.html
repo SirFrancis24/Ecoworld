@@ -1,0 +1,168 @@
+{% extends "layout.html" %}
+
+{% block title %}Battle Report - EcoWorld{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1 class="mb-0"><i class="fas fa-flag"></i> Battle Report</h1>
+        <div class="btn-group">
+            <a href="{{ url_for('military.military_view') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Military
+            </a>
+        </div>
+    </div>
+
+    <div class="card mb-4 border-dark">
+        <div class="card-header bg-dark text-white">
+            <div class="d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-{{ 'check-circle text-success' if battle_report.is_attacker_victory else 'times-circle text-danger' }}"></i>
+                    {{ battle_report.attack_type.capitalize() }} Attack - 
+                    {{ battle_report.battle_date.strftime('%Y-%m-%d %H:%M') }}
+                </h5>
+                <span class="badge {% if battle_report.is_attacker_victory %}bg-success{% else %}bg-danger{% endif %}">
+                    {% if is_aggressor %}
+                        {% if battle_report.is_attacker_victory %}Victory{% else %}Defeat{% endif %}
+                    {% else %}
+                        {% if battle_report.is_attacker_victory %}Defeat{% else %}Victory{% endif %}
+                    {% endif %}
+                </span>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card border-primary mb-3">
+                        <div class="card-header bg-primary text-white py-2">
+                            <h5 class="mb-0 d-flex justify-content-between align-items-center">
+                                <span>{{ war.aggressor.name }}</span>
+                                <span class="badge bg-light text-primary">Attacker</span>
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item d-flex justify-content-between">
+                                    <span>Military Strength:</span>
+                                    <strong>{{ "{:,.0f}".format(battle_report.attacker_strength) }}</strong>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between">
+                                    <span>Casualties:</span>
+                                    <strong class="text-danger">{{ "{:,}".format(battle_report.attacker_casualties) }}</strong>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between">
+                                    <span>Population Lost:</span>
+                                    <strong class="text-danger">{{ "{:,}".format(battle_report.attacker_population_lost) }}</strong>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card border-danger mb-3">
+                        <div class="card-header bg-danger text-white py-2">
+                            <h5 class="mb-0 d-flex justify-content-between align-items-center">
+                                <span>{{ war.defender.name }}</span>
+                                <span class="badge bg-light text-danger">Defender</span>
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item d-flex justify-content-between">
+                                    <span>Military Strength:</span>
+                                    <strong>{{ "{:,.0f}".format(battle_report.defender_strength) }}</strong>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between">
+                                    <span>Casualties:</span>
+                                    <strong class="text-danger">{{ "{:,}".format(battle_report.defender_casualties) }}</strong>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between">
+                                    <span>Population Lost:</span>
+                                    <strong class="text-danger">{{ "{:,}".format(battle_report.defender_population_lost) }}</strong>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {% if battle_report.is_attacker_victory %}
+            <div class="card border-success mb-3">
+                <div class="card-header bg-success text-white py-2">
+                    <h5 class="mb-0">Resources Plundered</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="d-flex justify-content-between">
+                                <span><i class="fas fa-gem me-2"></i> Raw Materials:</span>
+                                <strong>{{ "{:,.0f}".format(battle_report.raw_materials_plundered) }}</strong>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="d-flex justify-content-between">
+                                <span><i class="fas fa-apple-alt me-2"></i> Food:</span>
+                                <strong>{{ "{:,.0f}".format(battle_report.food_plundered) }}</strong>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="d-flex justify-content-between">
+                                <span><i class="fas fa-bolt me-2"></i> Energy:</span>
+                                <strong>{{ "{:,.0f}".format(battle_report.energy_plundered) }}</strong>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-3 text-center">
+                        <h4 class="mb-0">Total: <span class="text-success">{{ "{:,.0f}".format(battle_report.resources_plundered) }}</span></h4>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <h5 class="mb-3"><i class="fas fa-file-alt me-2"></i> Battle Details</h5>
+            <div class="card bg-light">
+                <div class="card-body">
+                    <pre class="mb-0" style="white-space: pre-wrap;">{{ battle_report.battle_description }}</pre>
+                </div>
+            </div>
+
+            <div class="mt-4 text-center">
+                <h5>Total War Statistics</h5>
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="card bg-light">
+                            <div class="card-body text-center">
+                                <h6>Duration</h6>
+                                <h3>{{ (war.end_date - war.start_date).days if war.end_date else (datetime.utcnow() - war.start_date).days }} Days</h3>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card bg-light">
+                            <div class="card-body text-center">
+                                <h6>Total Casualties</h6>
+                                <h3>{{ "{:,}".format(war.aggressor_casualties + war.defender_casualties) }}</h3>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card bg-light">
+                            <div class="card-body text-center">
+                                <h6>Population Lost</h6>
+                                <h3>{{ "{:,}".format(war.aggressor_population_lost + war.defender_population_lost) }}</h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card-footer">
+            <div class="d-flex justify-content-between">
+                <a href="{{ url_for('military.military_view') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to Military Command
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
