@@ -15,7 +15,12 @@ def update_resources(nation):
     if resources.last_updated:
         time_diff = now - resources.last_updated
         elapsed_hours = time_diff.total_seconds() / 3600  # Convert to hours
-    
+    else:
+        # Initialize the timestamp on the first update so future calls work correctly
+        resources.last_updated = now
+        db.session.commit()
+        return
+
     if elapsed_hours > 0:
         # Calculate production rates based on population distribution and technology
         raw_materials_rate = get_production_rate(nation, 'raw_materials')
